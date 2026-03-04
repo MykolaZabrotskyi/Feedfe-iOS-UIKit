@@ -30,6 +30,7 @@ final class NetworkService: NetworkServiceProtocol {
             DispatchQueue.main.async {
                 completion(.failure(NetworkError.invalidURL))
             }
+            
             return
         }
         
@@ -38,20 +39,16 @@ final class NetworkService: NetworkServiceProtocol {
         
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error {
-                DispatchQueue.main.async {
-                    completion(.failure(error))
-                }
+                completion(.failure(error))
+                
                 return
             }
             guard let data else {
-                DispatchQueue.main.async {
-                    completion(.failure(NetworkError.noData))
-                }
+                completion(.failure(NetworkError.noData))
+                
                 return
             }
-            DispatchQueue.main.async {
-                completion(.success(data))
-            }
+            completion(.success(data))
         }.resume()
     }
 }

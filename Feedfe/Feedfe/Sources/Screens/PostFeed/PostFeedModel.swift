@@ -8,10 +8,10 @@
 import Foundation
 
 struct PostFeedResponse: Codable {
-    let posts: [PostFeed]
+    let posts: [PostFeedModel]
 }
 
-struct PostFeed: Codable {
+struct PostFeedModel: Codable {
     let postId: Int
     let timestamp: Int
     let title: String
@@ -19,7 +19,7 @@ struct PostFeed: Codable {
     let likesCount: Int
     
     enum CodingKeys: String, CodingKey {
-        case postId = "post_id"
+        case postId
         case timestamp = "timeshamp"
         case title
         case previewText = "preview_text"
