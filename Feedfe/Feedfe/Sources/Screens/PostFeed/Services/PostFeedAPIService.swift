@@ -21,7 +21,7 @@ final class PostFeedAPIService: PostFeedAPIServiceProtocol {
     
     // MARK: - Init
     
-    init(networkService: NetworkServiceProtocol = NetworkService()) {
+    init(networkService: NetworkServiceProtocol) {
         self.networkService = networkService
     }
     

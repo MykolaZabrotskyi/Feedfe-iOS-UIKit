@@ -16,9 +16,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             return
         }
         
-        window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = PostFeedViewController()
-        window?.makeKeyAndVisible()
+        let window = UIWindow(windowScene: windowScene)
+        
+        let networkService = NetworkService()
+        
+        window.rootViewController = PostFeedAssembly.build(networkService: networkService)
+        window.makeKeyAndVisible()
+        
+        self.window = window
     }
 }
 

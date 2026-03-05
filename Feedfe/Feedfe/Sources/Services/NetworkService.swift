@@ -17,7 +17,7 @@ enum NetworkError: Error {
     case decodingError
 }
 
-protocol NetworkServiceProtocol {
+protocol NetworkServiceProtocol: AnyObject {
     func request(method: HTTPMethod, urlString: String, completion: @escaping (Result<Data, Error>) -> Void)
 }
 

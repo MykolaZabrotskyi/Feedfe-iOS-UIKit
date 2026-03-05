@@ -7,7 +7,12 @@
 
 import UIKit
 
-class PostFeedViewController: UIViewController {
+protocol PostFeedViewControllerProtocol: AnyObject {
+    func displayPosts()
+    func displayError(_ message: String)
+}
+
+class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol> {
     
     // MARK: - Properties
     
@@ -31,24 +36,7 @@ class PostFeedViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let networkService: NetworkServiceProtocol = NetworkService()
-        let postFeedAPIService: PostFeedAPIServiceProtocol = PostFeedAPIService(networkService: networkService)
-        postFeedAPIService.fetchPosts { [weak self] result in
-            guard let self else {
-                return
-            }
-            
-            switch result {
-            case .success(let posts):
-                debugPrint(String(posts.count))
-                dump(posts)
-                self.posts = posts
-                self.postFeedTableView.reloadData()
-                
-            case .failure(let error):
-                debugPrint(error.localizedDescription)
-            }
-        }
+        presenter.fetchPostFeed()
         
         setupPostFeedTableView()
         setupLayout()
@@ -69,21 +57,31 @@ class PostFeedViewController: UIViewController {
     }
     
     func setupPostFeedTableView() {
-
+        
         postFeedTableView.dataSource = self
     }
 }
 
 extension PostFeedViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return posts.count
+        return presenter.postsCount
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell: PostFeedTableViewCell = postFeedTableView.dequeue(for: indexPath)
         
-        cell.configure(with: posts[indexPath.row])
+        cell.configure(with: presenter.getPost(at: indexPath.row))
         
         return cell
+    }
+}
+
+extension PostFeedViewController: PostFeedViewControllerProtocol {
+    func displayPosts() {
+        postFeedTableView.reloadData()
+    }
+    
+    func displayError(_ message: String) {
+        debugPrint(message)
     }
 }
