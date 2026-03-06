@@ -21,10 +21,13 @@ protocol NetworkServiceProtocol: AnyObject {
     func request(method: HTTPMethod, urlString: String, completion: @escaping (Result<Data, Error>) -> Void)
 }
 
-final class NetworkService: NetworkServiceProtocol {
+final class NetworkService {
     
-    // MARK: - Internal Methods
-    
+}
+
+// MARK: - NetworkServiceProtocol
+
+extension NetworkService: NetworkServiceProtocol {
     func request(method: HTTPMethod, urlString: String, completion: @escaping (Result<Data, Error>) -> Void) {
         guard let url = URL(string: urlString) else {
             DispatchQueue.main.async {

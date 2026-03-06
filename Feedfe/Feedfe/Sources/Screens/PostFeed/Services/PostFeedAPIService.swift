@@ -8,7 +8,7 @@
 import Foundation
 
 protocol PostFeedAPIServiceProtocol {
-    func fetchPosts(completion: @escaping (Result<[PostFeedModel], Error>) -> Void)
+    func fetchPosts(completion: @escaping (Result<PostFeedResponse, Error>) -> Void)
 }
 
 final class PostFeedAPIService: PostFeedAPIServiceProtocol {
@@ -27,7 +27,7 @@ final class PostFeedAPIService: PostFeedAPIServiceProtocol {
     
     // MARK: - Internal Methods
     
-    func fetchPosts(completion: @escaping (Result<[PostFeedModel], Error>) -> Void) {
+    func fetchPosts(completion: @escaping (Result<PostFeedResponse, Error>) -> Void) {
         networkService.request(method: .get, urlString: feedURL) { result in
             switch result {
             case .success(let data):
@@ -35,7 +35,7 @@ final class PostFeedAPIService: PostFeedAPIServiceProtocol {
                     let response = try JSONDecoder().decode(PostFeedResponse.self, from: data)
                     
                     DispatchQueue.main.async {
-                        completion(.success(response.posts))
+                        completion(.success(response))
                     }
                 } catch {
                     DispatchQueue.main.async {

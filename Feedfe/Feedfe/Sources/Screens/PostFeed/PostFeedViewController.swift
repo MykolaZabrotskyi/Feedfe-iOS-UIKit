@@ -10,13 +10,10 @@ import UIKit
 protocol PostFeedViewControllerProtocol: AnyObject {
     func displayPosts()
     func displayError(_ message: String)
+    func updateRow(at index: Int)
 }
 
 class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol> {
-    
-    // MARK: - Properties
-    
-    private var posts: [PostFeedModel] = []
     
     // MARK: - UI Components
     
@@ -25,7 +22,7 @@ class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol> {
         
         tableView.register(cell: PostFeedTableViewCell.self)
         tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 150
+        tableView.estimatedRowHeight = Constant.estimatedRowHeight
         tableView.translatesAutoresizingMaskIntoConstraints = false
         
         return tableView
@@ -57,10 +54,11 @@ class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol> {
     }
     
     func setupPostFeedTableView() {
-        
         postFeedTableView.dataSource = self
     }
 }
+
+// MARK: - UITableViewDataSource
 
 extension PostFeedViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -72,9 +70,15 @@ extension PostFeedViewController: UITableViewDataSource {
         
         cell.configure(with: presenter.getPost(at: indexPath.row))
         
+        cell.onExpandTapped = { [weak self] in
+            self?.presenter.toggleExpand(at: indexPath.row)
+        }
+        
         return cell
     }
 }
+
+// MARK: - PostFeedViewControllerProtocol
 
 extension PostFeedViewController: PostFeedViewControllerProtocol {
     func displayPosts() {
@@ -83,5 +87,24 @@ extension PostFeedViewController: PostFeedViewControllerProtocol {
     
     func displayError(_ message: String) {
         debugPrint(message)
+    }
+    
+    func updateRow(at index: Int) {
+        let indexPath = IndexPath(row: index, section: 0)
+        
+        if let cell = postFeedTableView.cellForRow(at: indexPath) as? PostFeedTableViewCell {
+            postFeedTableView.performBatchUpdates({
+                cell.toggleExpand()
+                cell.layoutIfNeeded()
+            }, completion: nil)
+        }
+    }
+}
+
+// MARK: - Constants
+
+private extension PostFeedViewController {
+    enum Constant {
+        static let estimatedRowHeight: CGFloat = 200.0
     }
 }

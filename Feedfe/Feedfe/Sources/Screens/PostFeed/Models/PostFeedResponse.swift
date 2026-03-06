@@ -1,5 +1,5 @@
 //
-//  PostFeedModel.swift
+//  PostFeed.swift
 //  Feedfe
 //
 //  Created by Mykola Zabrotskyi on 04.03.2026.
@@ -8,10 +8,10 @@
 import Foundation
 
 struct PostFeedResponse: Codable {
-    let posts: [PostFeedModel]
+    let posts: [PostFeed]
 }
 
-struct PostFeedModel: Codable {
+struct PostFeed: Codable {
     let postId: Int
     let timestamp: Int
     let title: String

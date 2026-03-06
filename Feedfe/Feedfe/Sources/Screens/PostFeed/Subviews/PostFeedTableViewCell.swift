@@ -11,13 +11,29 @@ final class PostFeedTableViewCell: UITableViewCell {
     
     // MARK: - Properties
     
+    private var haveExpandButton: Bool = false {
+        didSet {
+            expandButton.isHidden = !haveExpandButton
+        }
+    }
+    
+    private var isExpanded: Bool = false {
+        didSet {
+            previewLabel.numberOfLines = isExpanded ? 0 : 2
+            let title = isExpanded ? Constant.Text.collapse : Constant.Text.expand
+            expandButton.setTitle(title, for: .normal)
+        }
+    }
+    
+    var onExpandTapped: (() -> Void)?
+    
     // MARK: - UI Components
     
     private let containerView: UIView = {
         let view = UIView()
         
-        view.backgroundColor = .systemIndigo.withAlphaComponent(0.1)
-        view.layer.cornerRadius = 6
+        view.backgroundColor = Constant.mainColor.withAlphaComponent(0.1)
+        view.layer.cornerRadius = Constant.cornerRadius
         view.translatesAutoresizingMaskIntoConstraints = false
         
         return view
@@ -26,9 +42,8 @@ final class PostFeedTableViewCell: UITableViewCell {
     private let titleLabel: UILabel = {
         let label = UILabel()
         
-        label.font = UIFont.systemFont(ofSize: 18, weight: .bold)
-        label.textColor = UIColor.systemIndigo
-        label.numberOfLines = 0
+        label.font = Constant.Font.title
+        label.textColor = Constant.mainColor
         label.translatesAutoresizingMaskIntoConstraints = false
         
         return label
@@ -37,7 +52,7 @@ final class PostFeedTableViewCell: UITableViewCell {
     private let previewLabel: UILabel = {
         let label = UILabel()
         
-        label.font = UIFont.systemFont(ofSize: 15, weight: .regular)
+        label.font = Constant.Font.previewText
         label.textColor = UIColor.systemGray
         label.numberOfLines = 2
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -47,10 +62,9 @@ final class PostFeedTableViewCell: UITableViewCell {
     
     private let likesImageView: UIImageView = {
         let imageView = UIImageView()
-        let config = UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)
-        
-        imageView.image = UIImage(systemName: "heart", withConfiguration: config)
-        imageView.tintColor = .systemIndigo
+
+        imageView.image = Constant.systemImage
+        imageView.tintColor = Constant.mainColor
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
         
@@ -60,8 +74,8 @@ final class PostFeedTableViewCell: UITableViewCell {
     private let likesLabel: UILabel = {
         let label = UILabel()
         
-        label.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
-        label.textColor = UIColor.systemIndigo
+        label.font = Constant.Font.likesLabel
+        label.textColor = Constant.mainColor
         label.numberOfLines = 1
         label.translatesAutoresizingMaskIntoConstraints = false
         
@@ -72,7 +86,7 @@ final class PostFeedTableViewCell: UITableViewCell {
         let stackView = UIStackView()
         
         stackView.axis = .horizontal
-        stackView.spacing = 3
+        stackView.spacing = Constant.Spacing.likesStackView
         stackView.alignment = .center
         stackView.translatesAutoresizingMaskIntoConstraints = false
         
@@ -82,12 +96,27 @@ final class PostFeedTableViewCell: UITableViewCell {
     private let dateLabel: UILabel = {
         let label = UILabel()
         
-        label.font = UIFont.systemFont(ofSize: 12, weight: .regular)
+        label.font = Constant.Font.dateFont
         label.textColor = UIColor.systemGray2
         label.numberOfLines = 1
         label.translatesAutoresizingMaskIntoConstraints = false
         
         return label
+    }()
+    
+    private lazy var expandButton: UIButton = {
+        let button = UIButton(type: .system)
+        
+        button.titleLabel?.font = Constant.Font.expandButton
+        button.contentHorizontalAlignment = .center
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = Constant.mainColor
+        button.layer.cornerRadius = Constant.cornerRadius
+        button.clipsToBounds = true
+        button.addTarget(self, action: #selector(expandButtonTapped), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        
+        return button
     }()
     
     private let horizontalStackView: UIStackView = {
@@ -104,7 +133,7 @@ final class PostFeedTableViewCell: UITableViewCell {
         let stackView = UIStackView()
         
         stackView.axis = .vertical
-        stackView.spacing = 12
+        stackView.spacing = Constant.Spacing.verticalStackView
         stackView.translatesAutoresizingMaskIntoConstraints = false
         
         return stackView
@@ -114,7 +143,7 @@ final class PostFeedTableViewCell: UITableViewCell {
         let stackView = UIStackView()
         
         stackView.axis = .vertical
-        stackView.spacing = 16
+        stackView.spacing = Constant.Spacing.cellStackView
         stackView.translatesAutoresizingMaskIntoConstraints = false
         
         return stackView
@@ -135,18 +164,49 @@ final class PostFeedTableViewCell: UITableViewCell {
     
     // MARK: - Internal Methods
     
-    func configure(with model: PostFeedModel) {
-        dateLabel.text = String(model.timestamp)
+    func configure(with model: PostFeedCell) {
+        dateLabel.text = model.timestamp
         titleLabel.text = model.title
         previewLabel.text = model.previewText
-        likesLabel.text = String(model.likesCount)
+        likesLabel.text = model.likesCount
         
+        isExpanded = model.isExpanded
+        haveExpandButton = isTextTruncated(text: model.previewText, font: previewLabel.font)
+        expandButton.isHidden = !haveExpandButton
+    }
+    
+    func toggleExpand() {
+        self.isExpanded.toggle()
     }
 }
 
 // MARK: - Private Methods
 
 private extension PostFeedTableViewCell {
+    @objc
+    func expandButtonTapped() {
+        onExpandTapped?()
+    }
+    
+    func isTextTruncated(text: String, font: UIFont, maxLines: Int = 2, paddingCount: Int = 4) -> Bool {
+        let availableWidth = self.bounds.width - CGFloat(paddingCount) * Constant.Padding.horizontal
+        
+        let maxSize = CGSize(width: availableWidth, height: .greatestFiniteMagnitude)
+        let options: NSStringDrawingOptions = [.usesLineFragmentOrigin, .usesFontLeading]
+        let attributes = [NSAttributedString.Key.font: font]
+        
+        let textRect = text.boundingRect(
+            with: maxSize,
+            options: options,
+            attributes: attributes,
+            context: nil
+        )
+        
+        return textRect.height > (font.lineHeight * CGFloat(maxLines))
+    }
+    
+    // MARK: - Setup
+    
     func setupUI(){
         selectionStyle = .none
         
@@ -160,29 +220,72 @@ private extension PostFeedTableViewCell {
         horizontalStackView.addArrangedSubview(dateLabel)
         
         verticalStackView.addArrangedSubview(previewLabel)
+        verticalStackView.addArrangedSubview(expandButton)
         verticalStackView.addArrangedSubview(horizontalStackView)
+        
         
         cellStackView.addArrangedSubview(titleLabel)
         cellStackView.addArrangedSubview(verticalStackView)
+        
+        titleLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+        titleLabel.setContentHuggingPriority(.required, for: .vertical)
+        
+        previewLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+        previewLabel.setContentHuggingPriority(.required, for: .vertical)
+        
+        expandButton.setContentHuggingPriority(.required, for: .vertical)
+        expandButton.setContentCompressionResistancePriority(.required, for: .vertical)
     }
     
     func setupLayout() {
         NSLayoutConstraint.activate([
-            containerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 6),
-            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -6),
-            containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
-            containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
+            containerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: Constant.Padding.vertical),
+            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Constant.Padding.vertical),
+            containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Constant.Padding.horizontal),
+            containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Constant.Padding.horizontal),
             
-            cellStackView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 12),
-            cellStackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -12),
-            cellStackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 12),
-            cellStackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -12)
+            cellStackView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: Constant.Padding.horizontal),
+            cellStackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -Constant.Padding.horizontal),
+            cellStackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: Constant.Padding.horizontal),
+            cellStackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -Constant.Padding.horizontal),
         ])
     }
 }
 
+// MARK: - Constants
+
 private extension PostFeedTableViewCell {
     enum Constant {
+        static let mainColor = UIColor.systemIndigo
+        static let cornerRadius: CGFloat = 6.0
         
+        static let systemImage = UIImage(
+            systemName: "heart",
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)
+        )
+        
+        enum Font {
+            static let title = UIFont.systemFont(ofSize: 18, weight: .bold)
+            static let previewText = UIFont.systemFont(ofSize: 15, weight: .regular)
+            static let likesLabel = UIFont.systemFont(ofSize: 15, weight: .semibold)
+            static let dateFont = UIFont.systemFont(ofSize: 12, weight: .regular)
+            static let expandButton = UIFont.systemFont(ofSize: 18, weight: .semibold)
+        }
+        
+        enum Spacing {
+            static let likesStackView: CGFloat = 3.0
+            static let verticalStackView: CGFloat = 9.0
+            static let cellStackView: CGFloat = 15.0
+        }
+        
+        enum Padding {
+            static let vertical: CGFloat = 6.0
+            static let horizontal: CGFloat = 12.0
+        }
+        
+        enum Text {
+            static let collapse = "Collapse"
+            static let expand = "Expand"
+        }
     }
 }

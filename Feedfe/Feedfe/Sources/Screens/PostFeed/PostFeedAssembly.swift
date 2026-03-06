@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class PostFeedAssembly {
+final class PostFeedAssembly {    
     static func build(networkService: NetworkServiceProtocol) -> UIViewController {
         let viewController = PostFeedViewController()
         let router = PostFeedRouter(viewController: viewController)

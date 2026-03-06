@@ -8,7 +8,7 @@
 import UIKit
 
 protocol PostFeedRouterProtocol: AnyObject {
-
+    
 }
 
 final class PostFeedRouter {
