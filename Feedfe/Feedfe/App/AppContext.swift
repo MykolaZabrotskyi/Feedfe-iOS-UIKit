@@ -7,13 +7,10 @@
 
 import Foundation
 
-struct AppContext {
+struct AppContext: DependencyContextProtocol {
     
-}
-
-// MARK: - DependencyContextProtocol
-
-extension AppContext: DependencyContextProtocol {
+    // MARK: - Internal Methods
+    
     func configure() {
         registerCoreComponents()
     }
