@@ -7,15 +7,21 @@
 
 import Foundation
 
-public protocol DependencyContextProtocol {
-    func configure()
+struct AppContext {
+    
 }
 
-struct AppContext: DependencyContextProtocol {
+// MARK: - DependencyContextProtocol
+
+extension AppContext: DependencyContextProtocol {
     func configure() {
         registerCoreComponents()
     }
-    
+}
+
+// MARK: - Private Methods
+
+private extension AppContext {
     private func registerCoreComponents() {
         DIContainer.shared.register(type: NetworkServiceProtocol.self) {
             return NetworkService()
