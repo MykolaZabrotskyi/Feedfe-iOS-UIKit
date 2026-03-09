@@ -1,5 +1,5 @@
 //
-//  PostFeedTableViewCell.swift
+//  FeedTableViewCell.swift
 //  Feedfe
 //
 //  Created by Mykola Zabrotskyi on 05.03.2026.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class PostFeedTableViewCell: UITableViewCell {
+final class FeedTableViewCell: UITableViewCell {
     
     // MARK: - Properties
     
@@ -20,8 +20,6 @@ final class PostFeedTableViewCell: UITableViewCell {
     private var isExpanded: Bool = false {
         didSet {
             previewLabel.numberOfLines = isExpanded ? 0 : 2
-            let title = isExpanded ? Constant.Text.collapse : Constant.Text.expand
-            expandButton.setTitle(title, for: .normal)
         }
     }
     
@@ -164,7 +162,7 @@ final class PostFeedTableViewCell: UITableViewCell {
     
     // MARK: - Internal Methods
     
-    func configure(with model: PostFeedCell) {
+    func configure(with model: FeedTableViewCellState) {
         dateLabel.text = model.timestamp
         titleLabel.text = model.title
         previewLabel.text = model.previewText
@@ -172,23 +170,30 @@ final class PostFeedTableViewCell: UITableViewCell {
         
         isExpanded = model.isExpanded
         haveExpandButton = isTextTruncated(text: model.previewText, font: previewLabel.font)
+        expandButton.setTitle(model.expandButtonTitle, for: .normal)
         expandButton.isHidden = !haveExpandButton
     }
     
-    func toggleExpand() {
+    func toggleExpand(expandButtonTitle: String) {
         self.isExpanded.toggle()
+        self.expandButton.setTitle(expandButtonTitle, for: .normal)
     }
 }
 
 // MARK: - Private Methods
 
-private extension PostFeedTableViewCell {
+private extension FeedTableViewCell {
     @objc
     func expandButtonTapped() {
         onExpandTapped?()
     }
     
-    func isTextTruncated(text: String, font: UIFont, maxLines: Int = 2, paddingCount: Int = 4) -> Bool {
+    func isTextTruncated(
+        text: String,
+        font: UIFont,
+        maxLines: Int = 2,
+        paddingCount: Int = 4
+    ) -> Bool {
         let availableWidth = self.bounds.width - CGFloat(paddingCount) * Constant.Padding.horizontal
         
         let maxSize = CGSize(width: availableWidth, height: .greatestFiniteMagnitude)
@@ -254,7 +259,7 @@ private extension PostFeedTableViewCell {
 
 // MARK: - Constants
 
-private extension PostFeedTableViewCell {
+private extension FeedTableViewCell {
     enum Constant {
         static let mainColor = UIColor.systemIndigo
         static let cornerRadius: CGFloat = 6.0
@@ -281,11 +286,6 @@ private extension PostFeedTableViewCell {
         enum Padding {
             static let vertical: CGFloat = 6.0
             static let horizontal: CGFloat = 12.0
-        }
-        
-        enum Text {
-            static let collapse = "Collapse"
-            static let expand = "Expand"
         }
     }
 }

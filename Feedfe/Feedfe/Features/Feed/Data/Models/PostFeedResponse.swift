@@ -7,10 +7,6 @@
 
 import Foundation
 
-struct PostFeedResponse: Codable {
-    let posts: [PostFeed]
-}
-
 struct PostFeed: Codable {
     let postId: Int
     let timestamp: Int

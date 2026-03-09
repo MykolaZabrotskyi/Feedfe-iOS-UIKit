@@ -8,19 +8,23 @@
 import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
-
+    
     var window: UIWindow?
-
-    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+    
+    func scene(
+        _ scene: UIScene,
+        willConnectTo session: UISceneSession,
+        options connectionOptions: UIScene.ConnectionOptions
+    ) {
         guard let windowScene = (scene as? UIWindowScene) else {
             return
         }
         
         let window = UIWindow(windowScene: windowScene)
         
-        let networkService = NetworkService()
+        let networkService = DIContainer.shared.resolve(type: NetworkServiceProtocol.self)
         
-        window.rootViewController = PostFeedAssembly.build(networkService: networkService)
+        window.rootViewController = FeedAssembly.build(with: networkService)
         window.makeKeyAndVisible()
         
         self.window = window
