@@ -90,13 +90,13 @@ private extension DetailsViewController {
     func createLayout() -> UICollectionViewLayout {
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .estimated(500)
+            heightDimension: .estimated(Constant.expectedHeight)
         )
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
         let groupSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .estimated(500)
+            heightDimension: .estimated(Constant.expectedHeight)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         
@@ -111,5 +111,6 @@ private extension DetailsViewController {
 private extension DetailsViewController {
     enum Constant {
         static let mainColor = UIColor.systemIndigo
+        static let expectedHeight: CGFloat = 500.0
     }
 }

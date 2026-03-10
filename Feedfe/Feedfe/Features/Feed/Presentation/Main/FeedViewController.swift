@@ -21,6 +21,7 @@ class FeedViewController: BaseViewController<FeedPresenterProtocol> {
         let tableView = UITableView()
         
         tableView.register(cell: FeedTableViewCell.self)
+        tableView.separatorStyle = .none
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = Constant.estimatedRowHeight
         tableView.translatesAutoresizingMaskIntoConstraints = false

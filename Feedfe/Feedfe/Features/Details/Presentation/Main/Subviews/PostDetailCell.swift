@@ -203,7 +203,7 @@ private extension PostDetailCell {
             static let title = UIFont.systemFont(ofSize: 21, weight: .bold)
             static let descriptionText = UIFont.systemFont(ofSize: 18, weight: .regular)
             static let likesLabel = UIFont.systemFont(ofSize: 18, weight: .semibold)
-            static let dateFont = UIFont.systemFont(ofSize: 13, weight: .regular)
+            static let dateFont = UIFont.systemFont(ofSize: 15, weight: .regular)
         }
         
         enum Spacing {
