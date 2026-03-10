@@ -12,7 +12,11 @@ final class FeedAssembly {
         let viewController = FeedViewController()
         let router = FeedRouter(viewController: viewController)
         let networkAPIService = FeedAPIService(networkService: networkService)
-        let presenter = FeedPresenter(viewController: viewController, router: router, networkAPIService: networkAPIService)
+        let presenter = FeedPresenter(
+            viewController: viewController,
+            router: router,
+            networkAPIService: networkAPIService
+        )
         
         viewController.inject(presenter: presenter)
         

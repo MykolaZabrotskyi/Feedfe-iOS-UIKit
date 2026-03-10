@@ -38,24 +38,6 @@ class FeedViewController: BaseViewController<FeedPresenterProtocol> {
         setupPostFeedTableView()
         setupLayout()
     }
-    
-    // MARK: - Setup
-    
-    func setupLayout() {
-        view.addSubview(feedTableView)
-        
-        NSLayoutConstraint.activate([
-            feedTableView.topAnchor.constraint(equalTo: view.topAnchor),
-            feedTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            feedTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            feedTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-            
-        ])
-    }
-    
-    func setupPostFeedTableView() {
-        feedTableView.dataSource = self
-    }
 }
 
 // MARK: - UITableViewDataSource
@@ -78,6 +60,16 @@ extension FeedViewController: UITableViewDataSource {
     }
 }
 
+// MARK: - UITableViewDelegate
+
+extension FeedViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        presenter.didSelectPost(at: indexPath.row)
+    }
+}
+
 // MARK: - PostFeedViewControllerProtocol
 
 extension FeedViewController: FeedViewControllerProtocol {
@@ -86,7 +78,9 @@ extension FeedViewController: FeedViewControllerProtocol {
     }
     
     func displayError(_ message: String) {
-        debugPrint(message)
+        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
     
     func updateRow(at index: Int, with expandButtonTitle: String) {
@@ -98,6 +92,30 @@ extension FeedViewController: FeedViewControllerProtocol {
                 cell.layoutIfNeeded()
             }, completion: nil)
         }
+    }
+}
+
+// MARK: - Private Methods
+
+private extension FeedViewController {
+    
+    // MARK: - Setup
+    
+    func setupLayout() {
+        view.addSubview(feedTableView)
+        
+        NSLayoutConstraint.activate([
+            feedTableView.topAnchor.constraint(equalTo: view.topAnchor),
+            feedTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            feedTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            feedTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            
+        ])
+    }
+    
+    func setupPostFeedTableView() {
+        feedTableView.dataSource = self
+        feedTableView.delegate = self
     }
 }
 

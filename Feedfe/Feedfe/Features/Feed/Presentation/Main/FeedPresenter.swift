@@ -12,9 +12,10 @@ protocol FeedPresenterProtocol: AnyObject {
     func fetchPostFeed()
     func getPost(at index: Int) -> FeedTableViewCellState
     func toggleExpand(at index: Int)
+    func didSelectPost(at index: Int)
 }
 
-final class FeedPresenter {
+final class FeedPresenter: BasePresenter {
     
     // MARK: - Properties
     
@@ -23,12 +24,6 @@ final class FeedPresenter {
     private let networkAPIService: FeedAPIServiceProtocol
     
     private var posts: [FeedTableViewCellState] = []
-    
-    private static let relativeDateFormatter: RelativeDateTimeFormatter = {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .full
-        return formatter
-    }()
     
     // MARK: - Init
     
@@ -43,7 +38,7 @@ final class FeedPresenter {
     }
 }
 
-// MARK: - PostFeedPresenterProtocol
+// MARK: - FeedPresenterProtocol
 
 extension FeedPresenter: FeedPresenterProtocol {
     var postsCount: Int {
@@ -75,6 +70,11 @@ extension FeedPresenter: FeedPresenterProtocol {
         posts[index].isExpanded.toggle()
         posts[index].expandButtonTitle = posts[index].isExpanded ? Constant.Text.collapse : Constant.Text.expand
         viewController?.updateRow(at: index, with: posts[index].expandButtonTitle)
+    }
+    
+    func didSelectPost(at index: Int) {
+        let selectedPostId = posts[index].postId
+        router.routeToDetails(with: selectedPostId)
     }
 }
 

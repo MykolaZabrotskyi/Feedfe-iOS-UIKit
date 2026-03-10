@@ -11,17 +11,8 @@ protocol FeedAPIServiceProtocol {
     func fetchPosts() async throws -> FeedResponse
 }
 
-final class FeedAPIService {
+final class FeedAPIService: BaseAPIService {
     
-    // MARK: - Properties
-    
-    private let networkService: NetworkServiceProtocol
-    
-    // MARK: - Init
-    
-    init(networkService: NetworkServiceProtocol) {
-        self.networkService = networkService
-    }
 }
 
 // MARK: - FeedAPIServiceProtocol

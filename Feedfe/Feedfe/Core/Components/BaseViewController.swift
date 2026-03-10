@@ -17,7 +17,7 @@ class BaseViewController<PresenterType>: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupLayout()
+        setupUI()
     }
     
     // MARK: - Internal Methods
@@ -32,7 +32,7 @@ private extension BaseViewController {
     
     // MARK: - Setup/Configuration
     
-    func setupLayout() {
+    func setupUI() {
         view.backgroundColor = .systemBackground
     }
 }
