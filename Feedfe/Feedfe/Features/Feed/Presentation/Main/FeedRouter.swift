@@ -19,9 +19,7 @@ final class FeedRouter: BaseRouter {
 
 extension FeedRouter: FeedRouterProtocol {
     func routeToDetails(with postId: String) {
-        let networkService = DIContainer.shared.resolve(type: NetworkServiceProtocol.self)
-        
-        let detailsViewController = DetailsAssembly.build(with: networkService, and: postId)
+        let detailsViewController = DetailsAssembly.build(with: postId)
         
         push(detailsViewController)
     }

@@ -8,15 +8,21 @@
 import UIKit
 
 final class DetailsAssembly {
-    static func build(with networkService: NetworkServiceProtocol, and postId: String) -> UIViewController {
+    static func build(with postId: String) -> UIViewController {
         let viewController = DetailsViewController()
         let router = DetailsRouter(viewController: viewController)
-        let networkAPIService = DetailsAPIService(networkService: networkService)
+        
+        let networkService = DIContainer.shared.resolve(type: NetworkServiceProtocol.self)
+        let dateFormatter = DIContainer.shared.resolve(type: DateFormatterProtocol.self)
+        
+        let feedAPIService = FeedAPIService(networkService: networkService)
+        
         let presenter = DetailsPresenter(
             viewController: viewController,
             router: router,
-            networkAPIService: networkAPIService,
-            postId: postId
+            postId: postId,
+            dateFormatter: dateFormatter,
+            feedAPIService: feedAPIService
         )
         
         viewController.inject(presenter: presenter)

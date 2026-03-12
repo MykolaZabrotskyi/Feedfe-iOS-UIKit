@@ -37,6 +37,7 @@ class FeedViewController: BaseViewController<FeedPresenterProtocol> {
         presenter.fetchPostFeed()
         
         setupPostFeedTableView()
+        setupUI()
         setupLayout()
     }
 }
@@ -102,9 +103,11 @@ private extension FeedViewController {
     
     // MARK: - Setup
     
-    func setupLayout() {
+    func setupUI() {
         view.addSubview(feedTableView)
-        
+    }
+    
+    func setupLayout() {
         NSLayoutConstraint.activate([
             feedTableView.topAnchor.constraint(equalTo: view.topAnchor),
             feedTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),

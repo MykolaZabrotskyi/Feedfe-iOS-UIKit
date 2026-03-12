@@ -162,7 +162,7 @@ final class FeedTableViewCell: UITableViewCell {
     
     // MARK: - Internal Methods
     
-    func configure(with model: FeedTableViewCellState) {
+    func configure(with model: FeedTableViewState) {
         dateLabel.text = model.timestamp
         titleLabel.text = model.title
         previewLabel.text = model.previewText

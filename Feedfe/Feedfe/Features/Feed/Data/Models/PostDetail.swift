@@ -16,7 +16,9 @@ struct PostDetail: Codable {
     enum CodingKeys: String, CodingKey {
         case postId
         case timestamp = "timeshamp"
-        case title, text, postImage
+        case title
+        case text
+        case postImage
         case likesCount = "likes_count"
     }
 }

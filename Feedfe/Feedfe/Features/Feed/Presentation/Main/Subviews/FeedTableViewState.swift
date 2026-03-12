@@ -5,7 +5,7 @@
 //  Created by Mykola Zabrotskyi on 06.03.2026.
 //
 
-struct FeedTableViewCellState {
+struct FeedTableViewState {
     let postId: String
     let timestamp: String
     let title: String

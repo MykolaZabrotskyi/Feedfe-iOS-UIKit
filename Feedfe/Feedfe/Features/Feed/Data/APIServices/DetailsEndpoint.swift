@@ -8,7 +8,7 @@
 import Foundation
 
 enum DetailsEndpoint: Endpoint {
-    case getPost(id: String)
+    case getPostDetail(id: String)
     
     var baseURL: URL {
         return URL(string: "https://raw.githubusercontent.com")!
@@ -16,7 +16,7 @@ enum DetailsEndpoint: Endpoint {
     
     var path: String {
         switch self {
-        case .getPost(let id):
+        case .getPostDetail(let id):
             return "/anton-natife/jsons/master/api/posts/\(id).json"
         }
     }

@@ -8,14 +8,20 @@
 import UIKit
 
 final class FeedAssembly {
-    static func build(with networkService: NetworkServiceProtocol) -> UIViewController {
+    static func build() -> UIViewController {
         let viewController = FeedViewController()
         let router = FeedRouter(viewController: viewController)
-        let networkAPIService = FeedAPIService(networkService: networkService)
+        
+        let networkService = DIContainer.shared.resolve(type: NetworkServiceProtocol.self)
+        let dateFormatter = DIContainer.shared.resolve(type: DateFormatterProtocol.self)
+        
+        let feedAPIService = FeedAPIService(networkService: networkService)
+        
         let presenter = FeedPresenter(
             viewController: viewController,
             router: router,
-            networkAPIService: networkAPIService
+            feedAPIService: feedAPIService,
+            dateFormatter: dateFormatter
         )
         
         viewController.inject(presenter: presenter)

@@ -11,14 +11,15 @@ protocol DetailsPresenterProtocol: AnyObject {
     func fetchPostDetails()
 }
 
-final class DetailsPresenter: BasePresenter {
+final class DetailsPresenter {
     
     // MARK: - Properties
     
     private weak var viewController: DetailsViewControllerProtocol?
     private let router: DetailsRouterProtocol
-    private let networkAPIService: DetailsAPIServiceProtocol
     private let postId: String
+    private let feedAPIService: FeedAPIServiceProtocol
+    private let dateFormatter: DateFormatterProtocol
     
     private var post: PostDetailViewState?
     
@@ -27,13 +28,15 @@ final class DetailsPresenter: BasePresenter {
     init(
         viewController: DetailsViewControllerProtocol,
         router: DetailsRouterProtocol,
-        networkAPIService: DetailsAPIServiceProtocol,
-        postId: String
+        postId: String,
+        dateFormatter: DateFormatterProtocol,
+        feedAPIService: FeedAPIServiceProtocol
     ) {
         self.router = router
         self.viewController = viewController
-        self.networkAPIService = networkAPIService
         self.postId = postId
+        self.dateFormatter = dateFormatter
+        self.feedAPIService = feedAPIService
     }
 }
 
@@ -43,7 +46,7 @@ extension DetailsPresenter: DetailsPresenterProtocol {
     func fetchPostDetails() {
         Task {
             do {
-                let response = try await networkAPIService.fetchPosts(id: postId)
+                let response = try await feedAPIService.fetchDetail(with: postId)
                 let viewState = self.mapToViewState(from: response.post)
                 self.post = viewState
                 
@@ -63,9 +66,7 @@ extension DetailsPresenter: DetailsPresenterProtocol {
 
 private extension DetailsPresenter {
     func mapToViewState(from post: PostDetail) -> PostDetailViewState {
-        let date = Date(timeIntervalSince1970: TimeInterval(post.timestamp))
-        
-        let dateString = Self.relativeDateFormatter.localizedString(for: date, relativeTo: Date())
+        let dateString = dateFormatter.formatRelativeDate(from: post.timestamp)
         
         return PostDetailViewState(
             timestamp: dateString,
