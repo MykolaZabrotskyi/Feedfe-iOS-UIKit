@@ -24,6 +24,6 @@ extension FeedAPIService: FeedAPIServiceProtocol {
     }
     
     func fetchDetail(with postId: String) async throws -> DetailResponse {
-        return try await networkService.fetch(from: DetailsEndpoint.getPostDetail(id: postId))
+        return try await networkService.fetch(from: FeedEndpoint.getPostDetail(id: postId))
     }
 }

@@ -12,7 +12,7 @@ protocol DetailsViewControllerProtocol: AnyObject {
     func displayError(_ message: String)
 }
 
-class DetailsViewController: BaseViewController<DetailsPresenterProtocol> {
+final class DetailsViewController: BaseViewController<DetailsPresenterProtocol> {
     
     // MARK: - Properties
     
