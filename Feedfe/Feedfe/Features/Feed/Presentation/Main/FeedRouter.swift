@@ -8,7 +8,7 @@
 import UIKit
 
 protocol FeedRouterProtocol: AnyObject {
-    
+    func routeToDetails(with postId: String)
 }
 
 final class FeedRouter: BaseRouter {
@@ -18,5 +18,9 @@ final class FeedRouter: BaseRouter {
 // MARK: - PostFeedRouterProtocol
 
 extension FeedRouter: FeedRouterProtocol {
-    
+    func routeToDetails(with postId: String) {
+        let detailsViewController = DetailsAssembly.build(with: postId)
+        
+        push(detailsViewController)
+    }
 }

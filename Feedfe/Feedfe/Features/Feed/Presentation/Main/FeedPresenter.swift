@@ -10,8 +10,9 @@ import Foundation
 protocol FeedPresenterProtocol: AnyObject {
     var postsCount: Int { get }
     func fetchPostFeed()
-    func getPost(at index: Int) -> FeedTableViewCellState
+    func getPost(at index: Int) -> FeedTableViewState
     func toggleExpand(at index: Int)
+    func didSelectPost(at index: Int)
 }
 
 final class FeedPresenter {
@@ -20,30 +21,27 @@ final class FeedPresenter {
     
     private weak var viewController: FeedViewControllerProtocol?
     private let router: FeedRouterProtocol
-    private let networkAPIService: FeedAPIServiceProtocol
+    private let feedAPIService: FeedAPIServiceProtocol
+    private let dateFormatter: DateFormatterProtocol
     
-    private var posts: [FeedTableViewCellState] = []
-    
-    private static let relativeDateFormatter: RelativeDateTimeFormatter = {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .full
-        return formatter
-    }()
+    private var posts: [FeedTableViewState] = []
     
     // MARK: - Init
     
     init(
         viewController: FeedViewControllerProtocol,
         router: FeedRouterProtocol,
-        networkAPIService: FeedAPIServiceProtocol
+        feedAPIService: FeedAPIServiceProtocol,
+        dateFormatter: DateFormatterProtocol
     ) {
         self.router = router
         self.viewController = viewController
-        self.networkAPIService = networkAPIService
+        self.feedAPIService = feedAPIService
+        self.dateFormatter = dateFormatter
     }
 }
 
-// MARK: - PostFeedPresenterProtocol
+// MARK: - FeedPresenterProtocol
 
 extension FeedPresenter: FeedPresenterProtocol {
     var postsCount: Int {
@@ -53,7 +51,7 @@ extension FeedPresenter: FeedPresenterProtocol {
     func fetchPostFeed() {
         Task {
             do {
-                let response = try await networkAPIService.fetchPosts()
+                let response = try await feedAPIService.fetchPosts()
                 self.posts = response.posts.map { self.mapToCellModel(from: $0) }
                 
                 await MainActor.run {
@@ -67,7 +65,7 @@ extension FeedPresenter: FeedPresenterProtocol {
         }
     }
     
-    func getPost(at index: Int) -> FeedTableViewCellState {
+    func getPost(at index: Int) -> FeedTableViewState {
         return posts[index]
     }
     
@@ -76,17 +74,21 @@ extension FeedPresenter: FeedPresenterProtocol {
         posts[index].expandButtonTitle = posts[index].isExpanded ? Constant.Text.collapse : Constant.Text.expand
         viewController?.updateRow(at: index, with: posts[index].expandButtonTitle)
     }
+    
+    func didSelectPost(at index: Int) {
+        let selectedPostId = posts[index].postId
+        
+        router.routeToDetails(with: selectedPostId)
+    }
 }
 
 // MARK: - Private Methods
 
 private extension FeedPresenter {
-    func mapToCellModel(from model: PostFeed) -> FeedTableViewCellState {
-        let date = Date(timeIntervalSince1970: TimeInterval(model.timestamp))
+    func mapToCellModel(from model: PostFeed) -> FeedTableViewState {
+        let dateString = dateFormatter.formatRelativeDate(from: model.timestamp)
         
-        let dateString = Self.relativeDateFormatter.localizedString(for: date, relativeTo: Date())
-        
-        return FeedTableViewCellState(
+        return FeedTableViewState(
             postId: String(model.postId),
             timestamp: dateString,
             title: model.title,

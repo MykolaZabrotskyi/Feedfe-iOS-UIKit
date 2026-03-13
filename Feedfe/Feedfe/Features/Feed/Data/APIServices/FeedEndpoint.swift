@@ -9,13 +9,20 @@ import Foundation
 
 enum FeedEndpoint: Endpoint {
     case getPosts
+    case getPostDetail(id: String)
     
     var baseURL: URL {
         return URL(string: "https://raw.githubusercontent.com")!
     }
     
     var path: String {
-        return "/anton-natife/jsons/master/api/main.json"
+        switch self {
+        case .getPosts:
+            return "/anton-natife/jsons/master/api/main.json"
+            
+        case .getPostDetail(let id):
+            return "/anton-natife/jsons/master/api/posts/\(id).json"
+        }
     }
     
     var method: HTTPMethod {

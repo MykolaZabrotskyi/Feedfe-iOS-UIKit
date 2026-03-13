@@ -23,5 +23,9 @@ private extension AppContext {
         DIContainer.shared.register(type: NetworkServiceProtocol.self) {
             return NetworkService()
         }
+        
+        DIContainer.shared.register(type: DateFormatterProtocol.self) {
+            return DateFormatter()
+        }
     }
 }

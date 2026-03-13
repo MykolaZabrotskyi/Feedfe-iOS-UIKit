@@ -22,9 +22,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         let window = UIWindow(windowScene: windowScene)
         
-        let networkService = DIContainer.shared.resolve(type: NetworkServiceProtocol.self)
+        let feedViewController = FeedAssembly.build()
         
-        window.rootViewController = FeedAssembly.build(with: networkService)
+        window.rootViewController = UINavigationController(rootViewController: feedViewController)
         window.makeKeyAndVisible()
         
         self.window = window

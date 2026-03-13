@@ -1,27 +1,28 @@
 //
-//  FeedAssembly.swift
+//  DetailsAssembly.swift
 //  Feedfe
 //
-//  Created by Mykola Zabrotskyi on 05.03.2026.
+//  Created by Mykola Zabrotskyi on 10.03.2026.
 //
 
 import UIKit
 
-final class FeedAssembly {
-    static func build() -> UIViewController {
-        let viewController = FeedViewController()
-        let router = FeedRouter(viewController: viewController)
+final class DetailsAssembly {
+    static func build(with postId: String) -> UIViewController {
+        let viewController = DetailsViewController()
+        let router = DetailsRouter(viewController: viewController)
         
         let networkService = DIContainer.shared.resolve(type: NetworkServiceProtocol.self)
         let dateFormatter = DIContainer.shared.resolve(type: DateFormatterProtocol.self)
         
         let feedAPIService = FeedAPIService(networkService: networkService)
         
-        let presenter = FeedPresenter(
+        let presenter = DetailsPresenter(
             viewController: viewController,
             router: router,
-            feedAPIService: feedAPIService,
-            dateFormatter: dateFormatter
+            postId: postId,
+            dateFormatter: dateFormatter,
+            feedAPIService: feedAPIService
         )
         
         viewController.inject(presenter: presenter)

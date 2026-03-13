@@ -9,19 +9,11 @@ import Foundation
 
 protocol FeedAPIServiceProtocol {
     func fetchPosts() async throws -> FeedResponse
+    func fetchDetail(with postId: String) async throws -> DetailResponse
 }
 
-final class FeedAPIService {
+final class FeedAPIService: BaseAPIService {
     
-    // MARK: - Properties
-    
-    private let networkService: NetworkServiceProtocol
-    
-    // MARK: - Init
-    
-    init(networkService: NetworkServiceProtocol) {
-        self.networkService = networkService
-    }
 }
 
 // MARK: - FeedAPIServiceProtocol
@@ -29,5 +21,9 @@ final class FeedAPIService {
 extension FeedAPIService: FeedAPIServiceProtocol {
     func fetchPosts() async throws -> FeedResponse {
         return try await networkService.fetch(from: FeedEndpoint.getPosts)
+    }
+    
+    func fetchDetail(with postId: String) async throws -> DetailResponse {
+        return try await networkService.fetch(from: FeedEndpoint.getPostDetail(id: postId))
     }
 }
