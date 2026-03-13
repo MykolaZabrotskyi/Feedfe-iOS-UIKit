@@ -1,0 +1,246 @@
+//
+//  PostFeedViewController.swift
+//  Feedfe
+//
+//  Created by Mykola Zabrotskyi on 04.03.2026.
+//
+
+import UIKit
+import CustomTab
+
+protocol PostFeedViewControllerProtocol: AnyObject {
+    func displayPosts()
+    func displayError(_ message: String)
+    func updateRow(at index: Int, with expandButtonTitle: String)
+}
+
+class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol> {
+    
+    private var currentDisplayMode: PostFeedCellType = .list
+    
+    // MARK: - UI Components
+    
+    private lazy var tabView: CustomTabView = {
+        let view = CustomTabView(
+            tabTitles: ["List", "Grid", "Gallery"],
+            mainColor: .systemIndigo,
+            secondColor: .systemGray
+        )
+        view.delegate = self
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    private lazy var collectionView: UICollectionView = {
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: createListLayout())
+        
+        collectionView.backgroundColor = .systemBackground
+        collectionView.register(cell: PostFeedListCollectioViewCell.self)
+        collectionView.register(cell: PostFeedGridCollevtionViewCell.self)
+        collectionView.register(cell: PostFeedGalleryCollectionViewCell.self)
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        
+        return collectionView
+    }()
+    
+    // MARK: - Lifecycle
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        presenter.fetchPostFeed()
+        
+        setupCollectionView()
+        setupUI()
+        setupLayout()
+    }
+}
+
+// MARK: - CustomTabViewDelegate
+
+extension PostFeedViewController: CustomTabViewDelegate {
+    func customTabView(_ view: CustomTabView, didSelectTabAt index: Int) {
+        guard let mode = PostFeedCellType(rawValue: index) else {
+            return
+        }
+        currentDisplayMode = mode
+        
+        let layout: UICollectionViewLayout
+        
+        switch mode {
+        case .list:
+            layout = createListLayout()
+        case .grid:
+            layout = createGridLayout()
+        case .gallery:
+            layout = createGalleryLayout()
+        }
+        
+        collectionView.setCollectionViewLayout(layout, animated: true)
+        collectionView.reloadData()
+    }
+}
+
+// MARK: - UICollectionViewDataSource & Delegate
+
+extension PostFeedViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return presenter.postsCount
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let model = presenter.getPost(at: indexPath.item)
+        
+        switch currentDisplayMode {
+        case .list:
+            let cell: PostFeedListCollectioViewCell = collectionView.dequeue(for: indexPath)
+            cell.configure(with: model)
+            cell.onExpandTapped = { [weak self] in
+                self?.presenter.toggleExpand(at: indexPath.item)
+            }
+            return cell
+            
+        case .grid:
+            let cell: PostFeedGridCollevtionViewCell = collectionView.dequeue(for: indexPath)
+            cell.configure(with: model)
+            return cell
+            
+        case .gallery:
+            let cell: PostFeedGalleryCollectionViewCell = collectionView.dequeue(for: indexPath)
+            cell.configure(with: model)
+            return cell
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        collectionView.deselectItem(at: indexPath, animated: true)
+        presenter.didSelectPost(at: indexPath.item)
+    }
+}
+
+// MARK: - PostFeedViewControllerProtocol
+
+extension PostFeedViewController: PostFeedViewControllerProtocol {
+    func displayPosts() {
+        collectionView.reloadData()
+    }
+    
+    func displayError(_ message: String) {
+        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+    
+    func updateRow(at index: Int, with expandButtonTitle: String) {
+        let indexPath = IndexPath(item: index, section: 0)
+        
+        if let cell = collectionView.cellForItem(at: indexPath) as? PostFeedListCollectioViewCell {
+            collectionView.performBatchUpdates({
+                cell.toggleExpand(expandButtonTitle: expandButtonTitle)
+                cell.layoutIfNeeded()
+            }, completion: nil)
+        }
+    }
+}
+
+// MARK: - Private Methods
+
+private extension PostFeedViewController {
+    
+    // MARK: - Setup
+    
+    func setupUI() {
+        view.addSubview(tabView)
+        view.addSubview(collectionView)
+    }
+    
+    func setupLayout() {
+        NSLayoutConstraint.activate([
+            tabView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tabView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tabView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tabView.heightAnchor.constraint(equalToConstant: 50),
+            
+            collectionView.topAnchor.constraint(equalTo: tabView.bottomAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+    }
+    
+    func setupCollectionView() {
+        collectionView.dataSource = self
+        collectionView.delegate = self
+    }
+    
+    func createListLayout() -> UICollectionViewLayout {
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .estimated(1.0)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .estimated(1.0)
+        )
+        let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
+        
+        let section = NSCollectionLayoutSection(group: group)
+        section.interGroupSpacing = 12
+        section.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12)
+        
+        return UICollectionViewCompositionalLayout(section: section)
+    }
+    
+    func createGridLayout() -> UICollectionViewLayout {
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(0.5),
+            heightDimension: .estimated(1.0)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .estimated(1.0)
+        )
+        
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, repeatingSubitem: item, count: 2)
+        group.interItemSpacing = .fixed(6)
+        
+        let section = NSCollectionLayoutSection(group: group)
+        section.interGroupSpacing = 12
+        section.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12)
+        
+        return UICollectionViewCompositionalLayout(section: section)
+    }
+    
+    func createGalleryLayout() -> UICollectionViewLayout {
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .fractionalHeight(1.0)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(0.85),
+            heightDimension: .fractionalHeight(1.0)
+        )
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+        
+        let section = NSCollectionLayoutSection(group: group)
+        section.orthogonalScrollingBehavior = .groupPagingCentered
+        section.interGroupSpacing = 12
+        section.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12)
+        
+        return UICollectionViewCompositionalLayout(section: section)
+    }
+}
+
+// MARK: - Constants
+
+private extension PostFeedViewController {
+    enum Constant {
+        static let estimatedRowHeight: CGFloat = 200.0
+    }
+}

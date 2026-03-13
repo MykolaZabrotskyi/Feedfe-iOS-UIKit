@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		377C02A02F64092400A57919 /* CustomTab in Frameworks */ = {isa = PBXBuildFile; productRef = 377C029F2F64092400A57919 /* CustomTab */; };
 		37E732632F604E21005BCFDA /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 37E732622F604E21005BCFDA /* Kingfisher */; };
 /* End PBXBuildFile section */
 
@@ -41,6 +42,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				37E732632F604E21005BCFDA /* Kingfisher in Frameworks */,
+				377C02A02F64092400A57919 /* CustomTab in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -84,6 +86,7 @@
 			name = Feedfe;
 			packageProductDependencies = (
 				37E732622F604E21005BCFDA /* Kingfisher */,
+				377C029F2F64092400A57919 /* CustomTab */,
 			);
 			productName = Feedfe;
 			productReference = 3711CF162F5826E40069F69A /* Feedfe.app */;
@@ -115,6 +118,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				37E732612F604E21005BCFDA /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				377C029E2F64092400A57919 /* XCRemoteSwiftPackageReference "CustomTab-iOS-UIKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3711CF172F5826E40069F69A /* Products */;
@@ -354,6 +358,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		377C029E2F64092400A57919 /* XCRemoteSwiftPackageReference "CustomTab-iOS-UIKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/MykolaZabrotskyi/CustomTab-iOS-UIKit";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
 		37E732612F604E21005BCFDA /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/onevcat/Kingfisher";
@@ -365,6 +377,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		377C029F2F64092400A57919 /* CustomTab */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 377C029E2F64092400A57919 /* XCRemoteSwiftPackageReference "CustomTab-iOS-UIKit" */;
+			productName = CustomTab;
+		};
 		37E732622F604E21005BCFDA /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 37E732612F604E21005BCFDA /* XCRemoteSwiftPackageReference "Kingfisher" */;

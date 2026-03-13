@@ -17,6 +17,7 @@ class BaseViewController<PresenterType>: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         setupUI()
     }
     

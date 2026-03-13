@@ -19,15 +19,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else {
             return
         }
-        
         let window = UIWindow(windowScene: windowScene)
-        
-        let feedViewController = FeedAssembly.build()
-        
-        window.rootViewController = UINavigationController(rootViewController: feedViewController)
+        let feedViewController = PostFeedAssembly.build()
+        let navigationController = UINavigationController(rootViewController: feedViewController)
+        window.rootViewController = navigationController
         window.makeKeyAndVisible()
-        
         self.window = window
     }
 }
-

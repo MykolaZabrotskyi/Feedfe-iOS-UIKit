@@ -1,6 +1,15 @@
 {
-  "originHash" : "ad75ae2d3b8d8b80d99635f65213a3c1092464aa54a86354f850b8317b6fa240",
+  "originHash" : "887459469210040068bee82988bf55ac365c96cb56702dc272b30fccbe8b822b",
   "pins" : [
+    {
+      "identity" : "customtab-ios-uikit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/MykolaZabrotskyi/CustomTab-iOS-UIKit",
+      "state" : {
+        "branch" : "master",
+        "revision" : "30e22ed89ab4590e2c53f005c86ae54d9a269877"
+      }
+    },
     {
       "identity" : "kingfisher",
       "kind" : "remoteSourceControl",
