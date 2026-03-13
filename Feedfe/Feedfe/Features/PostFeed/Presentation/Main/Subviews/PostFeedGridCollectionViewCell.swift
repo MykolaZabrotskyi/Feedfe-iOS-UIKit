@@ -1,5 +1,5 @@
 //
-//  PostFeedGalleryCollectionViewCell.swift
+//  PostFeedGridCollectionViewCell.swift
 //  Feedfe
 //
 //  Created by Mykola Zabrotskyi on 13.03.2026.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class PostFeedGalleryCollectionViewCell: UICollectionViewCell {
+final class PostFeedGridCollectionViewCell: UICollectionViewCell {
     
     // MARK: - UI Components
     
@@ -15,6 +15,7 @@ final class PostFeedGalleryCollectionViewCell: UICollectionViewCell {
         let view = UIView()
         view.backgroundColor = Constant.mainColor.withAlphaComponent(0.1)
         view.layer.cornerRadius = Constant.cornerRadius
+        view.clipsToBounds = true
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -23,7 +24,7 @@ final class PostFeedGalleryCollectionViewCell: UICollectionViewCell {
         let label = UILabel()
         label.font = Constant.Font.title
         label.textColor = Constant.mainColor
-        label.numberOfLines = 0
+        label.numberOfLines = 1
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -32,7 +33,7 @@ final class PostFeedGalleryCollectionViewCell: UICollectionViewCell {
         let label = UILabel()
         label.font = Constant.Font.previewText
         label.textColor = UIColor.systemGray
-        label.numberOfLines = 0
+        label.numberOfLines = 2
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -50,7 +51,7 @@ final class PostFeedGalleryCollectionViewCell: UICollectionViewCell {
         let label = UILabel()
         label.font = Constant.Font.likesLabel
         label.textColor = Constant.mainColor
-        label.numberOfLines = 0
+        label.numberOfLines = 1
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -64,15 +65,6 @@ final class PostFeedGalleryCollectionViewCell: UICollectionViewCell {
         return stackView
     }()
     
-    private let dateLabel: UILabel = {
-        let label = UILabel()
-        label.font = Constant.Font.dateFont
-        label.textColor = UIColor.systemGray2
-        label.numberOfLines = 0
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
     private let horizontalStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .horizontal
@@ -81,12 +73,13 @@ final class PostFeedGalleryCollectionViewCell: UICollectionViewCell {
         return stackView
     }()
     
-    private let verticalStackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.axis = .vertical
-        stackView.distribution = .equalSpacing
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        return stackView
+    private let dateLabel: UILabel = {
+        let label = UILabel()
+        label.font = Constant.Font.dateFont
+        label.textColor = UIColor.systemGray2
+        label.numberOfLines = 1
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
     }()
     
     private let cellStackView: UIStackView = {
@@ -101,27 +94,26 @@ final class PostFeedGalleryCollectionViewCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        
         setupUI()
         setupLayout()
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     
     // MARK: - Configuration
     
     func configure(with viewState: PostFeedViewState) {
-        dateLabel.text = viewState.date
         titleLabel.text = viewState.title
         previewLabel.text = viewState.previewText
         likesLabel.text = viewState.likesCount
+        dateLabel.text = viewState.date
     }
 }
 
 // MARK: - Private Methods
 
-private extension PostFeedGalleryCollectionViewCell {
+private extension PostFeedGridCollectionViewCell {
     func setupUI() {
         contentView.addSubview(containerView)
         containerView.addSubview(cellStackView)
@@ -132,12 +124,9 @@ private extension PostFeedGalleryCollectionViewCell {
         horizontalStackView.addArrangedSubview(likesStackView)
         horizontalStackView.addArrangedSubview(dateLabel)
         
-        verticalStackView.addArrangedSubview(previewLabel)
-        verticalStackView.addArrangedSubview(horizontalStackView)
-        
-        
         cellStackView.addArrangedSubview(titleLabel)
-        cellStackView.addArrangedSubview(verticalStackView)
+        cellStackView.addArrangedSubview(previewLabel)
+        cellStackView.addArrangedSubview(horizontalStackView)
     }
     
     func setupLayout() {
@@ -157,7 +146,7 @@ private extension PostFeedGalleryCollectionViewCell {
 
 // MARK: - Constants
 
-private extension PostFeedGalleryCollectionViewCell {
+private extension PostFeedGridCollectionViewCell {
     enum Constant {
         static let mainColor = UIColor.systemIndigo
         static let cornerRadius: CGFloat = 6.0
@@ -165,15 +154,15 @@ private extension PostFeedGalleryCollectionViewCell {
         
         static let systemImage = UIImage(
             systemName: "heart",
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: 21, weight: .semibold)
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)
         )
         
         enum Font {
-            static let title = UIFont.systemFont(ofSize: 24, weight: .bold)
-            static let previewText = UIFont.systemFont(ofSize: 21, weight: .regular)
-            static let likesLabel = UIFont.systemFont(ofSize: 21, weight: .semibold)
-            static let dateFont = UIFont.systemFont(ofSize: 18, weight: .regular)
-            static let expandButton = UIFont.systemFont(ofSize: 24, weight: .semibold)
+            static let title = UIFont.systemFont(ofSize: 18, weight: .bold)
+            static let previewText = UIFont.systemFont(ofSize: 15, weight: .regular)
+            static let likesLabel = UIFont.systemFont(ofSize: 15, weight: .semibold)
+            static let dateFont = UIFont.systemFont(ofSize: 12, weight: .regular)
+            static let expandButton = UIFont.systemFont(ofSize: 18, weight: .semibold)
         }
         
         enum Spacing {

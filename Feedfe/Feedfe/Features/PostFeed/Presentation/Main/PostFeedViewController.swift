@@ -23,8 +23,8 @@ class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol> {
     private lazy var tabView: CustomTabView = {
         let view = CustomTabView(
             tabTitles: ["List", "Grid", "Gallery"],
-            mainColor: .systemIndigo,
-            secondColor: .systemGray
+            mainColor: Constant.Color.main,
+            secondColor: Constant.Color.second
         )
         view.delegate = self
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -33,14 +33,20 @@ class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol> {
     
     private lazy var collectionView: UICollectionView = {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: createListLayout())
-        
         collectionView.backgroundColor = .systemBackground
-        collectionView.register(cell: PostFeedListCollectioViewCell.self)
-        collectionView.register(cell: PostFeedGridCollevtionViewCell.self)
+        collectionView.register(cell: PostFeedListCollectionViewCell.self)
+        collectionView.register(cell: PostFeedGridCollectionViewCell.self)
         collectionView.register(cell: PostFeedGalleryCollectionViewCell.self)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
-        
         return collectionView
+    }()
+    
+    private lazy var mainVerticalStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.spacing = Constant.Spacing.mainVerticalStackView
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        return stackView
     }()
     
     // MARK: - Lifecycle
@@ -70,20 +76,26 @@ extension PostFeedViewController: CustomTabViewDelegate {
         switch mode {
         case .list:
             layout = createListLayout()
+            collectionView.isScrollEnabled = true
         case .grid:
             layout = createGridLayout()
+            collectionView.isScrollEnabled = true
         case .gallery:
             layout = createGalleryLayout()
+            collectionView.isScrollEnabled = false
         }
         
-        collectionView.setCollectionViewLayout(layout, animated: true)
-        collectionView.reloadData()
+        UIView.performWithoutAnimation {
+            self.collectionView.setCollectionViewLayout(layout, animated: false)
+            self.collectionView.reloadData()
+            self.collectionView.layoutIfNeeded()
+        }
     }
 }
 
-// MARK: - UICollectionViewDataSource & Delegate
+// MARK: - UICollectionViewDataSource
 
-extension PostFeedViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+extension PostFeedViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return presenter.postsCount
     }
@@ -93,7 +105,7 @@ extension PostFeedViewController: UICollectionViewDataSource, UICollectionViewDe
         
         switch currentDisplayMode {
         case .list:
-            let cell: PostFeedListCollectioViewCell = collectionView.dequeue(for: indexPath)
+            let cell: PostFeedListCollectionViewCell = collectionView.dequeue(for: indexPath)
             cell.configure(with: model)
             cell.onExpandTapped = { [weak self] in
                 self?.presenter.toggleExpand(at: indexPath.item)
@@ -101,7 +113,7 @@ extension PostFeedViewController: UICollectionViewDataSource, UICollectionViewDe
             return cell
             
         case .grid:
-            let cell: PostFeedGridCollevtionViewCell = collectionView.dequeue(for: indexPath)
+            let cell: PostFeedGridCollectionViewCell = collectionView.dequeue(for: indexPath)
             cell.configure(with: model)
             return cell
             
@@ -111,7 +123,11 @@ extension PostFeedViewController: UICollectionViewDataSource, UICollectionViewDe
             return cell
         }
     }
-    
+}
+
+// MARK: - UICollectionViewDelegate
+
+extension PostFeedViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
         presenter.didSelectPost(at: indexPath.item)
@@ -134,7 +150,7 @@ extension PostFeedViewController: PostFeedViewControllerProtocol {
     func updateRow(at index: Int, with expandButtonTitle: String) {
         let indexPath = IndexPath(item: index, section: 0)
         
-        if let cell = collectionView.cellForItem(at: indexPath) as? PostFeedListCollectioViewCell {
+        if let cell = collectionView.cellForItem(at: indexPath) as? PostFeedListCollectionViewCell {
             collectionView.performBatchUpdates({
                 cell.toggleExpand(expandButtonTitle: expandButtonTitle)
                 cell.layoutIfNeeded()
@@ -146,32 +162,6 @@ extension PostFeedViewController: PostFeedViewControllerProtocol {
 // MARK: - Private Methods
 
 private extension PostFeedViewController {
-    
-    // MARK: - Setup
-    
-    func setupUI() {
-        view.addSubview(tabView)
-        view.addSubview(collectionView)
-    }
-    
-    func setupLayout() {
-        NSLayoutConstraint.activate([
-            tabView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            tabView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tabView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tabView.heightAnchor.constraint(equalToConstant: 50),
-            
-            collectionView.topAnchor.constraint(equalTo: tabView.bottomAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        ])
-    }
-    
-    func setupCollectionView() {
-        collectionView.dataSource = self
-        collectionView.delegate = self
-    }
     
     func createListLayout() -> UICollectionViewLayout {
         let itemSize = NSCollectionLayoutSize(
@@ -187,8 +177,13 @@ private extension PostFeedViewController {
         let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
         
         let section = NSCollectionLayoutSection(group: group)
-        section.interGroupSpacing = 12
-        section.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12)
+        section.interGroupSpacing = Constant.Spacing.collectionView
+        section.contentInsets = NSDirectionalEdgeInsets(
+            top: Constant.Spacing.collectionView,
+            leading: Constant.Spacing.collectionView,
+            bottom: Constant.Spacing.collectionView,
+            trailing: Constant.Spacing.collectionView
+        )
         
         return UICollectionViewCompositionalLayout(section: section)
     }
@@ -206,11 +201,15 @@ private extension PostFeedViewController {
         )
         
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, repeatingSubitem: item, count: 2)
-        group.interItemSpacing = .fixed(6)
+        group.interItemSpacing = .fixed(Constant.Spacing.collectionView)
         
         let section = NSCollectionLayoutSection(group: group)
-        section.interGroupSpacing = 12
-        section.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12)
+        section.interGroupSpacing = Constant.Spacing.collectionView
+        section.contentInsets = NSDirectionalEdgeInsets(
+            top: Constant.Spacing.collectionView,
+            leading: Constant.Spacing.collectionView,
+            bottom: Constant.Spacing.collectionView,
+            trailing: Constant.Spacing.collectionView)
         
         return UICollectionViewCompositionalLayout(section: section)
     }
@@ -223,17 +222,45 @@ private extension PostFeedViewController {
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
         let groupSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(0.85),
-            heightDimension: .fractionalHeight(1.0)
+            widthDimension: .fractionalWidth(0.9),
+            heightDimension: .fractionalHeight(0.95)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
         
         let section = NSCollectionLayoutSection(group: group)
         section.orthogonalScrollingBehavior = .groupPagingCentered
-        section.interGroupSpacing = 12
-        section.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12)
+        section.interGroupSpacing = Constant.Spacing.collectionView
+        section.contentInsets = NSDirectionalEdgeInsets(
+            top: Constant.Spacing.collectionView,
+            leading: Constant.Spacing.collectionView,
+            bottom: Constant.Spacing.collectionView,
+            trailing: Constant.Spacing.collectionView
+        )
         
         return UICollectionViewCompositionalLayout(section: section)
+    }
+    
+    // MARK: - Setup
+    
+    func setupUI() {
+        view.addSubview(mainVerticalStackView)
+        mainVerticalStackView.addArrangedSubview(tabView)
+        mainVerticalStackView.addArrangedSubview(collectionView)
+    }
+    
+    func setupLayout() {
+        NSLayoutConstraint.activate([
+            tabView.heightAnchor.constraint(equalToConstant: Constant.customTabViewHeight),
+            mainVerticalStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            mainVerticalStackView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            mainVerticalStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            mainVerticalStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+    }
+    
+    func setupCollectionView() {
+        collectionView.dataSource = self
+        collectionView.delegate = self
     }
 }
 
@@ -241,6 +268,16 @@ private extension PostFeedViewController {
 
 private extension PostFeedViewController {
     enum Constant {
-        static let estimatedRowHeight: CGFloat = 200.0
+        static let customTabViewHeight: CGFloat = 50.0
+        
+        enum Color {
+            static let main = UIColor.systemIndigo
+            static let second = UIColor.systemGray
+        }
+        
+        enum Spacing {
+            static let mainVerticalStackView: CGFloat = 9.0
+            static let collectionView: CGFloat = 12.0
+        }
     }
 }
