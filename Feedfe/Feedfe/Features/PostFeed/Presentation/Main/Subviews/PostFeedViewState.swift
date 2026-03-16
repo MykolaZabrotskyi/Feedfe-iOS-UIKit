@@ -5,7 +5,7 @@
 //  Created by Mykola Zabrotskyi on 06.03.2026.
 //
 
-struct PostFeedViewState: Hashable {
+nonisolated struct PostFeedViewState: Hashable {
     let id: String
     let date: String
     let title: String

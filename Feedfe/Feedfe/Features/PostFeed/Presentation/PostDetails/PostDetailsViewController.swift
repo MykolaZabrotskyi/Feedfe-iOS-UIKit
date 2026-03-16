@@ -64,12 +64,10 @@ extension PostDetailsViewController: PostDetailsViewControllerProtocol {
     
     func displayError(_ message: String, onOkTapped: @escaping () -> Void) {
         let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        
         let okAction = UIAlertAction(title: "OK", style: .default) { _ in
             onOkTapped()
         }
-        
+        alert.addAction(okAction)
         present(alert, animated: true)
     }
 }
