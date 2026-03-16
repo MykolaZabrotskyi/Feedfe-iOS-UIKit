@@ -16,6 +16,14 @@ protocol Endpoint {
 }
 
 extension Endpoint {
+    var headers: [String: String]? {
+        return ["Content-Type": "application/json"]
+    }
+    
+    var parameters: [String: Any]? {
+        return nil
+    }
+    
     func urlRequest() throws -> URLRequest {
         let url = baseURL.appendingPathComponent(path)
         

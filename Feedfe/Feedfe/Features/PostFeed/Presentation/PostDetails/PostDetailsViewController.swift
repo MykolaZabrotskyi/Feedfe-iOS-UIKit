@@ -7,9 +7,17 @@
 
 import UIKit
 
+enum PostDetailsCellType: Int, CaseIterable {
+    case image
+    case title
+    case text
+    case likes
+    case date
+}
+
 protocol PostDetailsViewControllerProtocol: AnyObject {
     func displayDetails(with viewState: PostDetailsViewState)
-    func displayError(_ message: String)
+    func displayError(_ message: String, onOkTapped: @escaping () -> Void)
 }
 
 final class PostDetailsViewController: BaseViewController<PostDetailsPresenterProtocol> {
@@ -54,9 +62,14 @@ extension PostDetailsViewController: PostDetailsViewControllerProtocol {
         self.collectionView.reloadData()
     }
     
-    func displayError(_ message: String) {
+    func displayError(_ message: String, onOkTapped: @escaping () -> Void) {
         let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
+        
+        let okAction = UIAlertAction(title: "OK", style: .default) { _ in
+            onOkTapped()
+        }
+        
         present(alert, animated: true)
     }
 }

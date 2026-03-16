@@ -52,10 +52,10 @@ extension PostFeedPresenter: PostFeedPresenterProtocol {
         Task {
             do {
                 let response = try await postAPIService.fetchPostFeed()
-                self.posts = response.posts.map { self.mapToCellModel(from: $0) }
+                self.posts = response.posts.compactMap { self.mapToCellModel(from: $0) }
                 
                 await MainActor.run {
-                    self.viewController?.displayPosts()
+                    self.viewController?.displayPosts(with: self.posts)
                 }
             } catch {
                 await MainActor.run {
@@ -72,7 +72,7 @@ extension PostFeedPresenter: PostFeedPresenterProtocol {
     func toggleExpand(at index: Int) {
         posts[index].isExpanded.toggle()
         posts[index].expandButtonTitle = posts[index].isExpanded ? Constant.Text.collapse : Constant.Text.expand
-        viewController?.updateRow(at: index, with: posts[index].expandButtonTitle)
+        viewController?.displayPosts(with: posts)
     }
     
     func didSelectPost(at index: Int) {
@@ -84,14 +84,23 @@ extension PostFeedPresenter: PostFeedPresenterProtocol {
 // MARK: - Private Methods
 
 private extension PostFeedPresenter {
-    func mapToCellModel(from dto: PostFeedDTO) -> PostFeedViewState {
-        let dateString = dateFormatter.formatRelativeDate(from: dto.timestamp)
+    func mapToCellModel(from dto: PostFeedDTO) -> PostFeedViewState? {
+        guard
+            let timestamp = dto.timestamp,
+            let title = dto.title,
+            let previewText = dto.previewText,
+            let likesCount = dto.likesCount
+        else {
+            return nil
+        }
+        
+        let dateString = dateFormatter.formatRelativeDate(from: timestamp)
         return PostFeedViewState(
             id: String(dto.id),
             date: dateString,
-            title: dto.title,
-            previewText: dto.previewText,
-            likesCount: String(dto.likesCount),
+            title: title,
+            previewText: previewText,
+            likesCount: String(likesCount),
             expandButtonTitle: Constant.Text.expand,
             isExpanded: false
         )

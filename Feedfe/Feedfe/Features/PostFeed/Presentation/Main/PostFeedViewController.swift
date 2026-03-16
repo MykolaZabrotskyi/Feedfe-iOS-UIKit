@@ -8,6 +8,18 @@
 import UIKit
 import CustomTab
 
+enum PostFeedCellType: Int, CaseIterable {
+    case list
+    case grid
+    case gallery
+}
+
+enum Section {
+  case main
+}
+
+typealias DataSource = UICollectionViewDiffableDataSource<Section, PostFeedViewState>
+
 protocol PostFeedViewControllerProtocol: AnyObject {
     func displayPosts()
     func displayError(_ message: String)

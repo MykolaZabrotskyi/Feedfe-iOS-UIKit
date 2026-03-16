@@ -47,7 +47,9 @@ extension PostDetailsPresenter: PostDetailsPresenterProtocol {
         Task {
             do {
                 let response = try await postAPIService.fetchPostDetails(with: postID)
-                let viewState = self.mapToViewState(from: response.post)
+                guard let viewState = self.mapToViewState(from: response.post) else {
+                    throw Constant.Error.corruptedData
+                }
                 self.post = viewState
                 
                 await MainActor.run {
@@ -55,7 +57,9 @@ extension PostDetailsPresenter: PostDetailsPresenterProtocol {
                 }
             } catch {
                 await MainActor.run {
-                    self.viewController?.displayError(error.localizedDescription)
+                    self.viewController?.displayError(error.localizedDescription) { [weak self] in
+                        self?.router.popToFeed()
+                    }
                 }
             }
         }
@@ -65,14 +69,41 @@ extension PostDetailsPresenter: PostDetailsPresenterProtocol {
 // MARK: - Private Methods
 
 private extension PostDetailsPresenter {
-    func mapToViewState(from dto: PostDetailsDTO) -> PostDetailsViewState {
-        let dateString = dateFormatter.formatRelativeDate(from: dto.timestamp)
+    func mapToViewState(from dto: PostDetailsDTO) -> PostDetailsViewState? {
+        guard
+            let timestamp = dto.timestamp,
+            let title = dto.title,
+            let text = dto.text,
+            let image = dto.image,
+            let likesCount = dto.likesCount
+        else {
+            return nil
+        }
+        
+        let dateString = dateFormatter.formatRelativeDate(from: timestamp)
         return PostDetailsViewState(
             date: dateString,
-            title: dto.title,
-            text: dto.text,
-            image: URL(string: dto.image),
-            likesCount: String(dto.likesCount)
+            title: title,
+            text: text,
+            image: URL(string: image),
+            likesCount: String(likesCount)
         )
+    }
+}
+
+// MARK: - Constants
+
+private extension PostDetailsPresenter {
+    enum Constant {
+        enum Error: LocalizedError {
+            case corruptedData
+            
+            var errorDescription: String? {
+                switch self {
+                case .corruptedData:
+                    return "Unable to load post details. Data is corrupt."
+                }
+            }
+        }
     }
 }

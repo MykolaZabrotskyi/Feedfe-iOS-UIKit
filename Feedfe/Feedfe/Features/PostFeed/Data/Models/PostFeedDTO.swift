@@ -7,10 +7,10 @@
 
 struct PostFeedDTO: Codable {
     let id: Int
-    let timestamp: Int
-    let title: String
-    let previewText: String
-    let likesCount: Int
+    let timestamp: Int?
+    let title: String?
+    let previewText: String?
+    let likesCount: Int?
     
     enum CodingKeys: String, CodingKey {
         case id = "postId"
