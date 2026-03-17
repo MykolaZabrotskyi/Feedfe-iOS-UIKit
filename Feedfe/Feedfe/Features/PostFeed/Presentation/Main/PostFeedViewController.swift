@@ -15,20 +15,15 @@ enum PostFeedCellType: Int, CaseIterable {
 }
 
 protocol PostFeedViewControllerProtocol: AnyObject {
-    func displayPosts(with posts: [PostFeedViewState])
+    func displayPosts(with viewState: PostFeedViewState)
     func displayError(_ message: String)
 }
 
-class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol> {
+final class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol> {
     
-    nonisolated enum Section {
-        case main
-    }
-    
-    typealias DataSource = UICollectionViewDiffableDataSource<Section, PostFeedViewState>
-    
+    typealias DataSource = UICollectionViewDiffableDataSource<PostFeedViewState.SectionType, PostFeedViewState.SectionItem>
+    typealias Snapshot = NSDiffableDataSourceSnapshot<PostFeedViewState.SectionType, PostFeedViewState.SectionItem>
     private lazy var dataSource: DataSource = setupDataSource()
-    private var currentDisplayMode: PostFeedCellType = .list
     
     // MARK: - UI Components
     
@@ -81,7 +76,6 @@ extension PostFeedViewController: CustomTabViewDelegate {
         guard let mode = PostFeedCellType(rawValue: index) else {
             return
         }
-        currentDisplayMode = mode
         
         let layout: UICollectionViewLayout
         
@@ -99,11 +93,7 @@ extension PostFeedViewController: CustomTabViewDelegate {
         
         collectionView.setCollectionViewLayout(layout, animated: false)
         
-        var snapshot = dataSource.snapshot()
-        if !snapshot.itemIdentifiers.isEmpty {
-            snapshot.reloadSections([.main])
-            dataSource.apply(snapshot, animatingDifferences: true)
-        }
+        presenter.didChangeDisplayMode(to: mode)
     }
 }
 
@@ -119,10 +109,12 @@ extension PostFeedViewController: UICollectionViewDelegate {
 // MARK: - PostFeedViewControllerProtocol
 
 extension PostFeedViewController: PostFeedViewControllerProtocol {
-    func displayPosts(with posts: [PostFeedViewState]) {
-        var snapshot = NSDiffableDataSourceSnapshot<Section, PostFeedViewState>()
-        snapshot.appendSections([.main])
-        snapshot.appendItems(posts, toSection: .main)
+    func displayPosts(with viewState: PostFeedViewState) {
+        var snapshot = Snapshot()
+        for section in viewState.sections {
+            snapshot.appendSections([section.type])
+            snapshot.appendItems(section.items, toSection: section.type)
+        }
         
         dataSource.apply(snapshot, animatingDifferences: true)
     }
@@ -237,32 +229,33 @@ private extension PostFeedViewController {
     
     func setupDataSource() -> DataSource {
         let dataSource = DataSource(collectionView: collectionView) { [weak self] (
-            collectionView, indexPath, viewState
+            collectionView, indexPath, sectionItem
         ) -> UICollectionViewCell? in
-            guard let self = self else {
+            guard let self else {
                 return nil
             }
             
-            switch self.currentDisplayMode {
-            case .list:
+            switch sectionItem {
+            case .list(let itemState):
                 let cell: PostFeedListCollectionViewCell = collectionView.dequeue(for: indexPath)
-                cell.configure(with: viewState)
+                cell.configure(with: itemState)
                 cell.onExpandTapped = { [weak self] in
                     self?.presenter.toggleExpand(at: indexPath.item)
                 }
                 return cell
                 
-            case .grid:
+            case .grid(let itemState):
                 let cell: PostFeedGridCollectionViewCell = collectionView.dequeue(for: indexPath)
-                cell.configure(with: viewState)
+                cell.configure(with: itemState)
                 return cell
                 
-            case .gallery:
+            case .gallery(let itemState):
                 let cell: PostFeedGalleryCollectionViewCell = collectionView.dequeue(for: indexPath)
-                cell.configure(with: viewState)
+                cell.configure(with: itemState)
                 return cell
             }
         }
+        
         return dataSource
     }
 }

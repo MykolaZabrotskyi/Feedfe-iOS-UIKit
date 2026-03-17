@@ -111,7 +111,7 @@ final class PostFeedGalleryCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Configuration
     
-    func configure(with viewState: PostFeedViewState) {
+    func configure(with viewState: PostFeedItemViewState) {
         dateLabel.text = viewState.date
         titleLabel.text = viewState.title
         previewLabel.text = viewState.previewText

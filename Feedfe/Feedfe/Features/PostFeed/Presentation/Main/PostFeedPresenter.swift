@@ -10,9 +10,9 @@ import Foundation
 protocol PostFeedPresenterProtocol: AnyObject {
     var postsCount: Int { get }
     func fetchPostFeed()
-    func getPost(at index: Int) -> PostFeedViewState
     func toggleExpand(at index: Int)
     func didSelectPost(at index: Int)
+    func didChangeDisplayMode(to mode: PostFeedCellType)
 }
 
 final class PostFeedPresenter {
@@ -24,7 +24,8 @@ final class PostFeedPresenter {
     private let postAPIService: PostAPIServiceProtocol
     private let dateFormatter: DateFormatterProtocol
     
-    private var posts: [PostFeedViewState] = []
+    private var posts: [PostFeedItemViewState] = []
+    private var currentDisplayMode: PostFeedCellType = .list
     
     // MARK: - Init
     
@@ -55,7 +56,7 @@ extension PostFeedPresenter: PostFeedPresenterProtocol {
                 self.posts = response.posts.compactMap { self.mapToCellModel(from: $0) }
                 
                 await MainActor.run {
-                    self.viewController?.displayPosts(with: self.posts)
+                    self.updateViewState()
                 }
             } catch {
                 await MainActor.run {
@@ -65,14 +66,15 @@ extension PostFeedPresenter: PostFeedPresenterProtocol {
         }
     }
     
-    func getPost(at index: Int) -> PostFeedViewState {
-        return posts[index]
+    func didChangeDisplayMode(to mode: PostFeedCellType) {
+        currentDisplayMode = mode
+        updateViewState()
     }
     
     func toggleExpand(at index: Int) {
         posts[index].isExpanded.toggle()
         posts[index].expandButtonTitle = posts[index].isExpanded ? Constant.Text.collapse : Constant.Text.expand
-        viewController?.displayPosts(with: posts)
+        updateViewState()
     }
     
     func didSelectPost(at index: Int) {
@@ -84,7 +86,7 @@ extension PostFeedPresenter: PostFeedPresenterProtocol {
 // MARK: - Private Methods
 
 private extension PostFeedPresenter {
-    func mapToCellModel(from dto: PostFeedDTO) -> PostFeedViewState? {
+    func mapToCellModel(from dto: PostFeedDTO) -> PostFeedItemViewState? {
         guard
             let timestamp = dto.timestamp,
             let title = dto.title,
@@ -95,7 +97,7 @@ private extension PostFeedPresenter {
         }
         
         let dateString = dateFormatter.formatRelativeDate(from: timestamp)
-        return PostFeedViewState(
+        return PostFeedItemViewState(
             id: String(dto.id),
             date: dateString,
             title: title,
@@ -104,6 +106,25 @@ private extension PostFeedPresenter {
             expandButtonTitle: Constant.Text.expand,
             isExpanded: false
         )
+    }
+    
+    func updateViewState() {
+        let sectionItems: [PostFeedViewState.SectionItem] = posts.map { post in
+            switch currentDisplayMode {
+            case .list:
+                return .list(post)
+                
+            case .grid:
+                return .grid(post)
+                
+            case .gallery:
+                return .gallery(post)
+            }
+        }
+        
+        let section = PostFeedViewState.Section(type: .main, items: sectionItems)
+        let viewState = PostFeedViewState(sections: [section])
+        viewController?.displayPosts(with: viewState)
     }
 }
 
