@@ -137,9 +137,10 @@ extension PostFeedViewController: PostFeedViewControllerProtocol {
         for section in viewState.sections {
             snapshot.appendSections([section.type])
             snapshot.appendItems(section.items, toSection: section.type)
+            snapshot.reloadItems(section.items)
         }
         
-        dataSource.apply(snapshot, animatingDifferences: true)
+        dataSource.apply(snapshot, animatingDifferences: false)
     }
     
     func displayError(_ message: String) {
