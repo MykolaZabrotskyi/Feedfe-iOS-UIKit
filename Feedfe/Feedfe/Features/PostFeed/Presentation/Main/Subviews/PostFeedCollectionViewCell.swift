@@ -1,5 +1,5 @@
 //
-//  PostFeedListCollectionViewCell.swift
+//  PostFeedCollectionViewCell.swift
 //  Feedfe
 //
 //  Created by Mykola Zabrotskyi on 05.03.2026.
@@ -7,7 +7,17 @@
 
 import UIKit
 
-final class PostFeedListCollectionViewCell: UICollectionViewCell {
+nonisolated struct PostFeedItemViewState: Hashable {
+    let id: String
+    let date: String
+    let title: String
+    let previewText: String
+    let likesCount: String
+    var expandButtonTitle: String
+    var isExpanded: Bool
+}
+
+final class PostFeedCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Properties
     
@@ -24,6 +34,7 @@ final class PostFeedListCollectionViewCell: UICollectionViewCell {
     }
     
     var onExpandTapped: (() -> Void)?
+    private var currentMode: CustomTabSelectedMode = .list
     
     // MARK: - UI Components
     
@@ -37,25 +48,20 @@ final class PostFeedListCollectionViewCell: UICollectionViewCell {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.font = Constant.Font.title
         label.textColor = Constant.mainColor
-        label.numberOfLines = 0
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private let previewLabel: UILabel = {
         let label = UILabel()
-        label.font = Constant.Font.previewText
         label.textColor = UIColor.systemGray
-        label.numberOfLines = 2
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private let likesImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = Constant.systemImage
         imageView.tintColor = Constant.mainColor
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
@@ -64,7 +70,6 @@ final class PostFeedListCollectionViewCell: UICollectionViewCell {
     
     private let likesLabel: UILabel = {
         let label = UILabel()
-        label.font = Constant.Font.likesLabel
         label.textColor = Constant.mainColor
         label.numberOfLines = 1
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -82,7 +87,6 @@ final class PostFeedListCollectionViewCell: UICollectionViewCell {
     
     private let dateLabel: UILabel = {
         let label = UILabel()
-        label.font = Constant.Font.dateFont
         label.textColor = UIColor.systemGray2
         label.numberOfLines = 1
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -91,7 +95,7 @@ final class PostFeedListCollectionViewCell: UICollectionViewCell {
     
     private lazy var expandButton: UIButton = {
         let button = UIButton(type: .system)
-        button.titleLabel?.font = Constant.Font.expandButton
+        button.titleLabel?.font = Constant.List.Font.expandButton
         button.contentHorizontalAlignment = .center
         button.setTitleColor(.white, for: .normal)
         button.backgroundColor = Constant.mainColor
@@ -114,6 +118,7 @@ final class PostFeedListCollectionViewCell: UICollectionViewCell {
         let stackView = UIStackView()
         stackView.axis = .vertical
         stackView.spacing = Constant.Spacing.verticalStackView
+        stackView.distribution = .equalSpacing
         stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }()
@@ -130,6 +135,7 @@ final class PostFeedListCollectionViewCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        
         setupUI()
         setupLayout()
     }
@@ -147,22 +153,28 @@ final class PostFeedListCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Configuration
     
-    func configure(with viewState: PostFeedItemViewState) {
-        dateLabel.text = viewState.date
-        titleLabel.text = viewState.title
-        previewLabel.text = viewState.previewText
-        likesLabel.text = viewState.likesCount
+    func configure(with itemViewState: PostFeedItemViewState, and mode: CustomTabSelectedMode) {
+        dateLabel.text = itemViewState.date
+        titleLabel.text = itemViewState.title
+        previewLabel.text = itemViewState.previewText
+        likesLabel.text = itemViewState.likesCount
         
-        isExpanded = viewState.isExpanded
-        haveExpandButton = isTextTruncated(text: viewState.previewText, font: previewLabel.font)
-        expandButton.setTitle(viewState.expandButtonTitle, for: .normal)
-        expandButton.isHidden = !haveExpandButton
+        applyStyle(for: mode)
+        
+        if mode == .list {
+            isExpanded = itemViewState.isExpanded
+            let haveExpandButton = isTextTruncated(text: itemViewState.previewText, font: previewLabel.font)
+            expandButton.setTitle(itemViewState.expandButtonTitle, for: .normal)
+            expandButton.isHidden = !haveExpandButton
+        } else {
+            expandButton.isHidden = true
+        }
     }
 }
 
 // MARK: - Private Methods
 
-private extension PostFeedListCollectionViewCell {
+private extension PostFeedCollectionViewCell {
     @objc
     func expandButtonTapped() {
         onExpandTapped?()
@@ -178,7 +190,7 @@ private extension PostFeedListCollectionViewCell {
         let maxSize = CGSize(width: availableWidth, height: .greatestFiniteMagnitude)
         let options: NSStringDrawingOptions = [.usesLineFragmentOrigin, .usesFontLeading]
         let attributes = [NSAttributedString.Key.font: font]
-    
+        
         let textRect = text.boundingRect(
             with: maxSize,
             options: options,
@@ -232,27 +244,94 @@ private extension PostFeedListCollectionViewCell {
             cellStackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -Constant.padding),
         ])
     }
+    
+    private func applyStyle(for mode: CustomTabSelectedMode) {
+        switch mode {
+        case .list:
+            titleLabel.font = Constant.List.Font.title
+            titleLabel.numberOfLines = 0
+            
+            previewLabel.font = Constant.List.Font.previewText
+            previewLabel.numberOfLines = 2
+            
+            likesImageView.image = Constant.List.systemImage
+            likesLabel.font = Constant.List.Font.likes
+            dateLabel.font = Constant.List.Font.date
+            
+        case .grid:
+            titleLabel.font = Constant.Grid.Font.title
+            titleLabel.numberOfLines = 1
+            
+            previewLabel.font = Constant.Grid.Font.previewText
+            previewLabel.numberOfLines = 2
+            
+            likesImageView.image = Constant.Grid.systemImage
+            likesLabel.font = Constant.Grid.Font.likes
+            dateLabel.font = Constant.Grid.Font.date
+            
+        case .gallery:
+            titleLabel.font = Constant.Gallery.Font.title
+            titleLabel.numberOfLines = 0
+            
+            previewLabel.font = Constant.Gallery.Font.previewText
+            previewLabel.numberOfLines = 0
+            
+            likesImageView.image = Constant.Gallery.systemImage
+            likesLabel.font = Constant.Gallery.Font.likes
+            dateLabel.font = Constant.Gallery.Font.date
+        }
+    }
 }
 
 // MARK: - Constants
 
-private extension PostFeedListCollectionViewCell {
+private extension PostFeedCollectionViewCell {
     enum Constant {
         static let mainColor = UIColor.systemIndigo
         static let cornerRadius: CGFloat = 6.0
         static let padding: CGFloat = 15.0
         
-        static let systemImage = UIImage(
-            systemName: "heart",
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
-        )
+        enum List {
+            static let systemImage = UIImage(
+                systemName: "heart",
+                withConfiguration: UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
+            )
+            
+            enum Font {
+                static let title = UIFont.systemFont(ofSize: 21, weight: .bold)
+                static let previewText = UIFont.systemFont(ofSize: 18, weight: .regular)
+                static let likes = UIFont.systemFont(ofSize: 18, weight: .semibold)
+                static let date = UIFont.systemFont(ofSize: 15, weight: .regular)
+                static let expandButton = UIFont.systemFont(ofSize: 21, weight: .semibold)
+            }
+        }
         
-        enum Font {
-            static let title = UIFont.systemFont(ofSize: 21, weight: .bold)
-            static let previewText = UIFont.systemFont(ofSize: 18, weight: .regular)
-            static let likesLabel = UIFont.systemFont(ofSize: 18, weight: .semibold)
-            static let dateFont = UIFont.systemFont(ofSize: 15, weight: .regular)
-            static let expandButton = UIFont.systemFont(ofSize: 21, weight: .semibold)
+        enum Grid {
+            static let systemImage = UIImage(
+                systemName: "heart",
+                withConfiguration: UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)
+            )
+            
+            enum Font {
+                static let title = UIFont.systemFont(ofSize: 18, weight: .bold)
+                static let previewText = UIFont.systemFont(ofSize: 15, weight: .regular)
+                static let likes = UIFont.systemFont(ofSize: 15, weight: .semibold)
+                static let date = UIFont.systemFont(ofSize: 12, weight: .regular)
+            }
+        }
+        
+        enum Gallery {
+            static let systemImage = UIImage(
+                systemName: "heart",
+                withConfiguration: UIImage.SymbolConfiguration(pointSize: 21, weight: .semibold)
+            )
+            
+            enum Font {
+                static let title = UIFont.systemFont(ofSize: 24, weight: .bold)
+                static let previewText = UIFont.systemFont(ofSize: 21, weight: .regular)
+                static let likes = UIFont.systemFont(ofSize: 21, weight: .semibold)
+                static let date = UIFont.systemFont(ofSize: 18, weight: .regular)
+            }
         }
         
         enum Spacing {

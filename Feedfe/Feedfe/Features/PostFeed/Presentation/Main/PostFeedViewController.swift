@@ -8,18 +8,20 @@
 import UIKit
 import CustomTab
 
-enum PostFeedCellType: Int, CaseIterable {
+enum CustomTabSelectedMode: Int, CaseIterable {
     case list
     case grid
     case gallery
 }
 
 protocol PostFeedViewControllerProtocol: AnyObject {
-    func displayPosts(with viewState: PostFeedViewState)
+    func render(with viewState: PostFeedViewState)
     func displayError(_ message: String)
 }
 
 final class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol> {
+    
+    // MARK: - Properties
     
     typealias DataSource = UICollectionViewDiffableDataSource<PostFeedViewState.SectionType, PostFeedViewState.SectionItem>
     typealias Snapshot = NSDiffableDataSourceSnapshot<PostFeedViewState.SectionType, PostFeedViewState.SectionItem>
@@ -39,11 +41,9 @@ final class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol
     }()
     
     private lazy var collectionView: UICollectionView = {
-        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: createListLayout())
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeCollectionViewLayout())
         collectionView.backgroundColor = .systemBackground
-        collectionView.register(cell: PostFeedListCollectionViewCell.self)
-        collectionView.register(cell: PostFeedGridCollectionViewCell.self)
-        collectionView.register(cell: PostFeedGalleryCollectionViewCell.self)
+        collectionView.register(cell: PostFeedCollectionViewCell.self)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()
@@ -73,26 +73,9 @@ final class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol
 
 extension PostFeedViewController: CustomTabViewDelegate {
     func customTabView(_ view: CustomTabView, didSelectTabAt index: Int) {
-        guard let mode = PostFeedCellType(rawValue: index) else {
+        guard let mode = CustomTabSelectedMode(rawValue: index) else {
             return
         }
-        
-        let layout: UICollectionViewLayout
-        
-        switch mode {
-        case .list:
-            layout = createListLayout()
-            collectionView.isScrollEnabled = true
-        case .grid:
-            layout = createGridLayout()
-            collectionView.isScrollEnabled = true
-        case .gallery:
-            layout = createGalleryLayout()
-            collectionView.isScrollEnabled = false
-        }
-        
-        collectionView.setCollectionViewLayout(layout, animated: false)
-        
         presenter.didChangeDisplayMode(to: mode)
     }
 }
@@ -109,7 +92,11 @@ extension PostFeedViewController: UICollectionViewDelegate {
 // MARK: - PostFeedViewControllerProtocol
 
 extension PostFeedViewController: PostFeedViewControllerProtocol {
-    func displayPosts(with viewState: PostFeedViewState) {
+    func render(with viewState: PostFeedViewState) {
+        if let firstSection = viewState.sections.first {
+            collectionView.isScrollEnabled = (firstSection.type != .gallery)
+        }
+        
         var snapshot = Snapshot()
         for section in viewState.sections {
             snapshot.appendSections([section.type])
@@ -129,59 +116,50 @@ extension PostFeedViewController: PostFeedViewControllerProtocol {
 // MARK: - Private Methods
 
 private extension PostFeedViewController {
-    func createListLayout() -> UICollectionViewLayout {
-        let itemSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1.0),
-            heightDimension: .estimated(1.0)
-        )
+    func makeCollectionViewLayout() -> UICollectionViewCompositionalLayout {
+        return UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
+            guard let self else {
+                return nil
+            }
+            
+            let sectionType = self.dataSource.snapshot().sectionIdentifiers[sectionIndex]
+            
+            switch sectionType {
+            case .list:
+                return self.makeListSection()
+                
+            case .grid:
+                return self.makeGridSection()
+                
+            case .gallery:
+                return self.makeGallerySection()
+            }
+        }
+    }
+    
+    func makeListSection() -> NSCollectionLayoutSection {
+        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(1.0))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        
-        let groupSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1.0),
-            heightDimension: .estimated(1.0)
-        )
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(1.0))
         let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
-        
-        let section = makeSection(group: group)
-        return UICollectionViewCompositionalLayout(section: section)
+        return makeSection(group: group)
     }
     
-    func createGridLayout() -> UICollectionViewLayout {
-        let itemSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(0.5),
-            heightDimension: .estimated(1.0)
-        )
+    func makeGridSection() -> NSCollectionLayoutSection {
+        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.5), heightDimension: .estimated(1.0))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        
-        let groupSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1.0),
-            heightDimension: .estimated(1.0)
-        )
-        let group = NSCollectionLayoutGroup.horizontal(
-            layoutSize: groupSize,
-            repeatingSubitem: item, count: 2
-        )
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(1.0))
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, repeatingSubitem: item, count: 2)
         group.interItemSpacing = .fixed(Constant.Spacing.collectionView)
-        
-        let section = makeSection(group: group)
-        return UICollectionViewCompositionalLayout(section: section)
+        return makeSection(group: group)
     }
     
-    func createGalleryLayout() -> UICollectionViewLayout {
-        let itemSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(1.0),
-            heightDimension: .fractionalHeight(1.0)
-        )
+    func makeGallerySection() -> NSCollectionLayoutSection {
+        let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0))
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        
-        let groupSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(0.9),
-            heightDimension: .fractionalHeight(0.95)
-        )
+        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.9), heightDimension: .fractionalHeight(0.95))
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-        
-        let section = makeSection(group: group, orthogonalScrollingBehavior: .groupPagingCentered)
-        return UICollectionViewCompositionalLayout(section: section)
+        return makeSection(group: group, orthogonalScrollingBehavior: .groupPagingCentered)
     }
     
     func makeSection(
@@ -231,31 +209,24 @@ private extension PostFeedViewController {
         let dataSource = DataSource(collectionView: collectionView) { [weak self] (
             collectionView, indexPath, sectionItem
         ) -> UICollectionViewCell? in
-            guard let self else {
-                return nil
-            }
+            let cell: PostFeedCollectionViewCell = collectionView.dequeue(for: indexPath)
             
             switch sectionItem {
-            case .list(let itemState):
-                let cell: PostFeedListCollectionViewCell = collectionView.dequeue(for: indexPath)
-                cell.configure(with: itemState)
+            case .list(let itemViewState):
+                cell.configure(with: itemViewState, and: .list)
                 cell.onExpandTapped = { [weak self] in
                     self?.presenter.toggleExpand(at: indexPath.item)
                 }
-                return cell
                 
-            case .grid(let itemState):
-                let cell: PostFeedGridCollectionViewCell = collectionView.dequeue(for: indexPath)
-                cell.configure(with: itemState)
-                return cell
+            case .grid(let itemViewState):
+                cell.configure(with: itemViewState, and: .grid)
                 
-            case .gallery(let itemState):
-                let cell: PostFeedGalleryCollectionViewCell = collectionView.dequeue(for: indexPath)
-                cell.configure(with: itemState)
-                return cell
+            case .gallery(let itemViewState):
+                cell.configure(with: itemViewState, and: .gallery)
             }
+            
+            return cell
         }
-        
         return dataSource
     }
 }

@@ -7,19 +7,11 @@
 
 import Foundation
 
-nonisolated struct PostFeedItemViewState: Hashable {
-    let id: String
-    let date: String
-    let title: String
-    let previewText: String
-    let likesCount: String
-    var expandButtonTitle: String
-    var isExpanded: Bool
-}
-
 nonisolated struct PostFeedViewState: Hashable {
     enum SectionType: Hashable {
-        case main
+        case list
+        case grid
+        case gallery
     }
     
     enum SectionItem: Hashable {

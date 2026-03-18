@@ -12,7 +12,7 @@ protocol PostFeedPresenterProtocol: AnyObject {
     func fetchPostFeed()
     func toggleExpand(at index: Int)
     func didSelectPost(at index: Int)
-    func didChangeDisplayMode(to mode: PostFeedCellType)
+    func didChangeDisplayMode(to mode: CustomTabSelectedMode)
 }
 
 final class PostFeedPresenter {
@@ -25,7 +25,7 @@ final class PostFeedPresenter {
     private let dateFormatter: DateFormatterProtocol
     
     private var posts: [PostFeedItemViewState] = []
-    private var currentDisplayMode: PostFeedCellType = .list
+    private var currentDisplayMode: CustomTabSelectedMode = .list
     
     // MARK: - Init
     
@@ -66,7 +66,7 @@ extension PostFeedPresenter: PostFeedPresenterProtocol {
         }
     }
     
-    func didChangeDisplayMode(to mode: PostFeedCellType) {
+    func didChangeDisplayMode(to mode: CustomTabSelectedMode) {
         currentDisplayMode = mode
         updateViewState()
     }
@@ -122,9 +122,16 @@ private extension PostFeedPresenter {
             }
         }
         
-        let section = PostFeedViewState.Section(type: .main, items: sectionItems)
+        let sectionType: PostFeedViewState.SectionType
+        switch currentDisplayMode {
+        case .list: sectionType = .list
+        case .grid: sectionType = .grid
+        case .gallery: sectionType = .gallery
+        }
+        
+        let section = PostFeedViewState.Section(type: sectionType, items: sectionItems)
         let viewState = PostFeedViewState(sections: [section])
-        viewController?.displayPosts(with: viewState)
+        viewController?.render(with: viewState)
     }
 }
 
