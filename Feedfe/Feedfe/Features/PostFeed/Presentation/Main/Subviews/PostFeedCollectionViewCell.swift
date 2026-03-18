@@ -153,22 +153,34 @@ final class PostFeedCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Configuration
     
-    func configure(with itemViewState: PostFeedItemViewState, and mode: CustomTabSelectedMode) {
+    func configure(with sectionItem: PostFeedViewState.SectionItem) {
+        let itemViewState: PostFeedItemViewState
+        
+        switch sectionItem {
+        case .list(let state):
+            itemViewState = state
+            applyStyle(for: .list)
+            let haveExpandButton = isTextTruncated(text: itemViewState.previewText, font: previewLabel.font)
+            expandButton.setTitle(itemViewState.expandButtonTitle, for: .normal)
+            expandButton.isHidden = !haveExpandButton
+            previewLabel.numberOfLines = itemViewState.isExpanded ? 0 : 2
+            
+        case .grid(let state):
+            itemViewState = state
+            applyStyle(for: .grid)
+            expandButton.isHidden = true
+            
+        case .gallery(let state):
+            itemViewState = state
+            applyStyle(for: .gallery)
+            expandButton.isHidden = true
+        }
+        
+        isExpanded = itemViewState.isExpanded
         dateLabel.text = itemViewState.date
         titleLabel.text = itemViewState.title
         previewLabel.text = itemViewState.previewText
         likesLabel.text = itemViewState.likesCount
-        
-        applyStyle(for: mode)
-        
-        if mode == .list {
-            isExpanded = itemViewState.isExpanded
-            let haveExpandButton = isTextTruncated(text: itemViewState.previewText, font: previewLabel.font)
-            expandButton.setTitle(itemViewState.expandButtonTitle, for: .normal)
-            expandButton.isHidden = !haveExpandButton
-        } else {
-            expandButton.isHidden = true
-        }
     }
 }
 
