@@ -209,10 +209,14 @@ private extension PostFeedViewController {
         let dataSource = DataSource(collectionView: collectionView) { [weak self] (
             collectionView, indexPath, sectionItem
         ) -> UICollectionViewCell? in
+            guard let self else {
+                return nil
+            }
             
             let cell: PostFeedCollectionViewCell = collectionView.dequeue(for: indexPath)
+            let sectionType = self.dataSource.snapshot().sectionIdentifiers[indexPath.section]
             
-            cell.configure(with: sectionItem)
+            cell.configure(with: sectionItem, sectionType: sectionType)
             
             cell.onExpandTapped = { [weak self] in
                 self?.presenter.toggleExpand(at: indexPath.item)

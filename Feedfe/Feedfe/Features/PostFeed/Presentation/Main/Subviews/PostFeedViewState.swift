@@ -14,11 +14,7 @@ nonisolated struct PostFeedViewState: Hashable {
         case gallery
     }
     
-    enum SectionItem: Hashable {
-        case list(PostFeedItemViewState)
-        case grid(PostFeedItemViewState)
-        case gallery(PostFeedItemViewState)
-    }
+    typealias SectionItem = PostFeedItemViewState
     
     struct Section: Hashable {
         let type: SectionType

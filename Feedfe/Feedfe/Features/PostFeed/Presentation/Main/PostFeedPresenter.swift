@@ -109,27 +109,16 @@ private extension PostFeedPresenter {
     }
     
     func updateViewState() {
-        let sectionItems: [PostFeedViewState.SectionItem] = posts.map { post in
-            switch currentDisplayMode {
-            case .list:
-                return .list(post)
-                
-            case .grid:
-                return .grid(post)
-                
-            case .gallery:
-                return .gallery(post)
-            }
-        }
-        
         let sectionType: PostFeedViewState.SectionType
         switch currentDisplayMode {
         case .list: sectionType = .list
+            
         case .grid: sectionType = .grid
+            
         case .gallery: sectionType = .gallery
         }
         
-        let section = PostFeedViewState.Section(type: sectionType, items: sectionItems)
+        let section = PostFeedViewState.Section(type: sectionType, items: posts)
         let viewState = PostFeedViewState(sections: [section])
         viewController?.render(with: viewState)
     }

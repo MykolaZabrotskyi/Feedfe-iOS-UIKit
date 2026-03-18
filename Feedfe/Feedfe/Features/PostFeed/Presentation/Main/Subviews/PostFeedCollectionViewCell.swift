@@ -153,34 +153,26 @@ final class PostFeedCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Configuration
     
-    func configure(with sectionItem: PostFeedViewState.SectionItem) {
-        let itemViewState: PostFeedItemViewState
+    func configure(with viewState: PostFeedItemViewState, sectionType: PostFeedViewState.SectionType) {
+        self.isExpanded = viewState.isExpanded
         
-        switch sectionItem {
-        case .list(let state):
-            itemViewState = state
-            applyStyle(for: .list)
-            let haveExpandButton = isTextTruncated(text: itemViewState.previewText, font: previewLabel.font)
-            expandButton.setTitle(itemViewState.expandButtonTitle, for: .normal)
+        dateLabel.text = viewState.date
+        titleLabel.text = viewState.title
+        previewLabel.text = viewState.previewText
+        likesLabel.text = viewState.likesCount
+        
+        applyStyle(for: sectionType)
+        
+        switch sectionType {
+        case .list:
+            let haveExpandButton = isTextTruncated(text: viewState.previewText, font: previewLabel.font)
+            expandButton.setTitle(viewState.expandButtonTitle, for: .normal)
             expandButton.isHidden = !haveExpandButton
-            previewLabel.numberOfLines = itemViewState.isExpanded ? 0 : 2
+            previewLabel.numberOfLines = isExpanded ? 0 : 2
             
-        case .grid(let state):
-            itemViewState = state
-            applyStyle(for: .grid)
-            expandButton.isHidden = true
-            
-        case .gallery(let state):
-            itemViewState = state
-            applyStyle(for: .gallery)
+        case .grid, .gallery:
             expandButton.isHidden = true
         }
-        
-        isExpanded = itemViewState.isExpanded
-        dateLabel.text = itemViewState.date
-        titleLabel.text = itemViewState.title
-        previewLabel.text = itemViewState.previewText
-        likesLabel.text = itemViewState.likesCount
     }
 }
 
@@ -257,8 +249,8 @@ private extension PostFeedCollectionViewCell {
         ])
     }
     
-    private func applyStyle(for mode: CustomTabSelectedMode) {
-        switch mode {
+    private func applyStyle(for sectionType: PostFeedViewState.SectionType) {
+        switch sectionType {
         case .list:
             titleLabel.font = Constant.List.Font.title
             titleLabel.numberOfLines = 0
