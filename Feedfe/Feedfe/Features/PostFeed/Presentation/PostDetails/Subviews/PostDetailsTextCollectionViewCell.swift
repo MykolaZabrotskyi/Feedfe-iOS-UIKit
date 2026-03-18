@@ -1,5 +1,5 @@
 //
-//  PostDescriptionCell.swift
+//  PostDetailsTextCollectionViewCell.swift
 //  Feedfe
 //
 //  Created by Mykola Zabrotskyi on 12.03.2026.
@@ -7,18 +7,16 @@
 
 import UIKit
 
-final class PostDescriptionCell: UICollectionViewCell {
+final class PostDetailsTextCollectionViewCell: UICollectionViewCell {
     
     // MARK: - UI Components
     
     private let textDescriptionLabel: UILabel = {
         let label = UILabel()
-        
         label.font = Constant.font
         label.textColor = Constant.color
         label.numberOfLines = 0
         label.translatesAutoresizingMaskIntoConstraints = false
-        
         return label
     }()
     
@@ -26,6 +24,7 @@ final class PostDescriptionCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        
         setupUI()
         setupLayout()
     }
@@ -41,7 +40,7 @@ final class PostDescriptionCell: UICollectionViewCell {
 
 // MARK: - Private Methods
 
-private extension PostDescriptionCell {
+private extension PostDetailsTextCollectionViewCell {
     
     // MARK: - Setup
     
@@ -61,7 +60,7 @@ private extension PostDescriptionCell {
 
 // MARK: - Constants
 
-private extension PostDescriptionCell {
+private extension PostDetailsTextCollectionViewCell {
     enum Constant {
         static let color = UIColor.systemGray
         static let font = UIFont.systemFont(ofSize: 18, weight: .regular)

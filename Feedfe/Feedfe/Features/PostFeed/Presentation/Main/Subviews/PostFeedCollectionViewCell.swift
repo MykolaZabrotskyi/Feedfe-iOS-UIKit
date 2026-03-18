@@ -1,5 +1,5 @@
 //
-//  FeedTableViewCell.swift
+//  PostFeedCollectionViewCell.swift
 //  Feedfe
 //
 //  Created by Mykola Zabrotskyi on 05.03.2026.
@@ -7,7 +7,17 @@
 
 import UIKit
 
-final class FeedTableViewCell: UITableViewCell {
+nonisolated struct PostFeedItemViewState: Hashable {
+    let id: String
+    let date: String
+    let title: String
+    let previewText: String
+    let likesCount: String
+    var expandButtonTitle: String
+    var isExpanded: Bool
+}
+
+final class PostFeedCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Properties
     
@@ -24,88 +34,68 @@ final class FeedTableViewCell: UITableViewCell {
     }
     
     var onExpandTapped: (() -> Void)?
+    private var currentMode: CustomTabSelectedMode = .list
     
     // MARK: - UI Components
     
     private let containerView: UIView = {
         let view = UIView()
-        
         view.backgroundColor = Constant.mainColor.withAlphaComponent(0.1)
         view.layer.cornerRadius = Constant.cornerRadius
         view.translatesAutoresizingMaskIntoConstraints = false
-        
         return view
     }()
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        
-        label.font = Constant.Font.title
         label.textColor = Constant.mainColor
         label.translatesAutoresizingMaskIntoConstraints = false
-        
         return label
     }()
     
     private let previewLabel: UILabel = {
         let label = UILabel()
-        
-        label.font = Constant.Font.previewText
         label.textColor = UIColor.systemGray
-        label.numberOfLines = 2
         label.translatesAutoresizingMaskIntoConstraints = false
-        
         return label
     }()
     
     private let likesImageView: UIImageView = {
         let imageView = UIImageView()
-
-        imageView.image = Constant.systemImage
         imageView.tintColor = Constant.mainColor
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        
         return imageView
     }()
     
     private let likesLabel: UILabel = {
         let label = UILabel()
-        
-        label.font = Constant.Font.likesLabel
         label.textColor = Constant.mainColor
         label.numberOfLines = 1
         label.translatesAutoresizingMaskIntoConstraints = false
-        
         return label
     }()
     
     private let likesStackView: UIStackView = {
         let stackView = UIStackView()
-        
         stackView.axis = .horizontal
         stackView.spacing = Constant.Spacing.likesStackView
         stackView.alignment = .center
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        
         return stackView
     }()
     
     private let dateLabel: UILabel = {
         let label = UILabel()
-        
-        label.font = Constant.Font.dateFont
         label.textColor = UIColor.systemGray2
         label.numberOfLines = 1
         label.translatesAutoresizingMaskIntoConstraints = false
-        
         return label
     }()
     
     private lazy var expandButton: UIButton = {
         let button = UIButton(type: .system)
-        
-        button.titleLabel?.font = Constant.Font.expandButton
+        button.titleLabel?.font = Constant.List.Font.expandButton
         button.contentHorizontalAlignment = .center
         button.setTitleColor(.white, for: .normal)
         button.backgroundColor = Constant.mainColor
@@ -113,44 +103,38 @@ final class FeedTableViewCell: UITableViewCell {
         button.clipsToBounds = true
         button.addTarget(self, action: #selector(expandButtonTapped), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
-        
         return button
     }()
     
     private let horizontalStackView: UIStackView = {
         let stackView = UIStackView()
-        
         stackView.axis = .horizontal
         stackView.distribution = .equalSpacing
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        
         return stackView
     }()
     
     private let verticalStackView: UIStackView = {
         let stackView = UIStackView()
-        
         stackView.axis = .vertical
         stackView.spacing = Constant.Spacing.verticalStackView
+        stackView.distribution = .equalSpacing
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        
         return stackView
     }()
     
     private let cellStackView: UIStackView = {
         let stackView = UIStackView()
-        
         stackView.axis = .vertical
         stackView.spacing = Constant.Spacing.cellStackView
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        
         return stackView
     }()
     
     // MARK: - Init
     
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
+    override init(frame: CGRect) {
+        super.init(frame: frame)
         
         setupUI()
         setupLayout()
@@ -162,27 +146,39 @@ final class FeedTableViewCell: UITableViewCell {
     
     // MARK: - Internal Methods
     
-    func configure(with model: FeedTableViewState) {
-        dateLabel.text = model.timestamp
-        titleLabel.text = model.title
-        previewLabel.text = model.previewText
-        likesLabel.text = model.likesCount
-        
-        isExpanded = model.isExpanded
-        haveExpandButton = isTextTruncated(text: model.previewText, font: previewLabel.font)
-        expandButton.setTitle(model.expandButtonTitle, for: .normal)
-        expandButton.isHidden = !haveExpandButton
-    }
-    
     func toggleExpand(expandButtonTitle: String) {
         self.isExpanded.toggle()
         self.expandButton.setTitle(expandButtonTitle, for: .normal)
+    }
+    
+    // MARK: - Configuration
+    
+    func configure(with viewState: PostFeedItemViewState, sectionType: PostFeedViewState.SectionType) {
+        self.isExpanded = viewState.isExpanded
+        
+        dateLabel.text = viewState.date
+        titleLabel.text = viewState.title
+        previewLabel.text = viewState.previewText
+        likesLabel.text = viewState.likesCount
+        
+        applyStyle(for: sectionType)
+        
+        switch sectionType {
+        case .list:
+            let haveExpandButton = isTextTruncated(text: viewState.previewText, font: previewLabel.font)
+            expandButton.setTitle(viewState.expandButtonTitle, for: .normal)
+            expandButton.isHidden = !haveExpandButton
+            previewLabel.numberOfLines = isExpanded ? 0 : 2
+            
+        case .grid, .gallery:
+            expandButton.isHidden = true
+        }
     }
 }
 
 // MARK: - Private Methods
 
-private extension FeedTableViewCell {
+private extension PostFeedCollectionViewCell {
     @objc
     func expandButtonTapped() {
         onExpandTapped?()
@@ -194,8 +190,7 @@ private extension FeedTableViewCell {
         maxLines: Int = 2,
         paddingCount: Int = 4
     ) -> Bool {
-        let availableWidth = self.bounds.width - CGFloat(paddingCount) * Constant.Padding.horizontal
-        
+        let availableWidth = self.bounds.width - CGFloat(paddingCount) * Constant.padding
         let maxSize = CGSize(width: availableWidth, height: .greatestFiniteMagnitude)
         let options: NSStringDrawingOptions = [.usesLineFragmentOrigin, .usesFontLeading]
         let attributes = [NSAttributedString.Key.font: font]
@@ -213,8 +208,6 @@ private extension FeedTableViewCell {
     // MARK: - Setup
     
     func setupUI(){
-        selectionStyle = .none
-        
         contentView.addSubview(containerView)
         containerView.addSubview(cellStackView)
         
@@ -244,48 +237,111 @@ private extension FeedTableViewCell {
     
     func setupLayout() {
         NSLayoutConstraint.activate([
-            containerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: Constant.Padding.vertical),
-            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -Constant.Padding.vertical),
-            containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: Constant.Padding.horizontal),
-            containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -Constant.Padding.horizontal),
+            containerView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             
-            cellStackView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: Constant.Padding.horizontal),
-            cellStackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -Constant.Padding.horizontal),
-            cellStackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: Constant.Padding.horizontal),
-            cellStackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -Constant.Padding.horizontal),
+            cellStackView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: Constant.padding),
+            cellStackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -Constant.padding),
+            cellStackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: Constant.padding),
+            cellStackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -Constant.padding),
         ])
+    }
+    
+    private func applyStyle(for sectionType: PostFeedViewState.SectionType) {
+        switch sectionType {
+        case .list:
+            titleLabel.font = Constant.List.Font.title
+            titleLabel.numberOfLines = 0
+            
+            previewLabel.font = Constant.List.Font.previewText
+            previewLabel.numberOfLines = 2
+            
+            likesImageView.image = Constant.List.systemImage
+            likesLabel.font = Constant.List.Font.likes
+            dateLabel.font = Constant.List.Font.date
+            
+        case .grid:
+            titleLabel.font = Constant.Grid.Font.title
+            titleLabel.numberOfLines = 1
+            
+            previewLabel.font = Constant.Grid.Font.previewText
+            previewLabel.numberOfLines = 2
+            
+            likesImageView.image = Constant.Grid.systemImage
+            likesLabel.font = Constant.Grid.Font.likes
+            dateLabel.font = Constant.Grid.Font.date
+            
+        case .gallery:
+            titleLabel.font = Constant.Gallery.Font.title
+            titleLabel.numberOfLines = 0
+            
+            previewLabel.font = Constant.Gallery.Font.previewText
+            previewLabel.numberOfLines = 0
+            
+            likesImageView.image = Constant.Gallery.systemImage
+            likesLabel.font = Constant.Gallery.Font.likes
+            dateLabel.font = Constant.Gallery.Font.date
+        }
     }
 }
 
 // MARK: - Constants
 
-private extension FeedTableViewCell {
+private extension PostFeedCollectionViewCell {
     enum Constant {
         static let mainColor = UIColor.systemIndigo
         static let cornerRadius: CGFloat = 6.0
+        static let padding: CGFloat = 15.0
         
-        static let systemImage = UIImage(
-            systemName: "heart",
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)
-        )
+        enum List {
+            static let systemImage = UIImage(
+                systemName: "heart",
+                withConfiguration: UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)
+            )
+            
+            enum Font {
+                static let title = UIFont.systemFont(ofSize: 21, weight: .bold)
+                static let previewText = UIFont.systemFont(ofSize: 18, weight: .regular)
+                static let likes = UIFont.systemFont(ofSize: 18, weight: .semibold)
+                static let date = UIFont.systemFont(ofSize: 15, weight: .regular)
+                static let expandButton = UIFont.systemFont(ofSize: 21, weight: .semibold)
+            }
+        }
         
-        enum Font {
-            static let title = UIFont.systemFont(ofSize: 18, weight: .bold)
-            static let previewText = UIFont.systemFont(ofSize: 15, weight: .regular)
-            static let likesLabel = UIFont.systemFont(ofSize: 15, weight: .semibold)
-            static let dateFont = UIFont.systemFont(ofSize: 12, weight: .regular)
-            static let expandButton = UIFont.systemFont(ofSize: 18, weight: .semibold)
+        enum Grid {
+            static let systemImage = UIImage(
+                systemName: "heart",
+                withConfiguration: UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)
+            )
+            
+            enum Font {
+                static let title = UIFont.systemFont(ofSize: 18, weight: .bold)
+                static let previewText = UIFont.systemFont(ofSize: 15, weight: .regular)
+                static let likes = UIFont.systemFont(ofSize: 15, weight: .semibold)
+                static let date = UIFont.systemFont(ofSize: 12, weight: .regular)
+            }
+        }
+        
+        enum Gallery {
+            static let systemImage = UIImage(
+                systemName: "heart",
+                withConfiguration: UIImage.SymbolConfiguration(pointSize: 21, weight: .semibold)
+            )
+            
+            enum Font {
+                static let title = UIFont.systemFont(ofSize: 24, weight: .bold)
+                static let previewText = UIFont.systemFont(ofSize: 21, weight: .regular)
+                static let likes = UIFont.systemFont(ofSize: 21, weight: .semibold)
+                static let date = UIFont.systemFont(ofSize: 18, weight: .regular)
+            }
         }
         
         enum Spacing {
             static let likesStackView: CGFloat = 3.0
             static let verticalStackView: CGFloat = 9.0
             static let cellStackView: CGFloat = 15.0
-        }
-        
-        enum Padding {
-            static let vertical: CGFloat = 6.0
-            static let horizontal: CGFloat = 12.0
         }
     }
 }

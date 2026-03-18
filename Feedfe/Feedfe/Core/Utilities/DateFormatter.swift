@@ -12,7 +12,9 @@ protocol DateFormatterProtocol {
 }
 
 final class DateFormatter {
+    
     // MARK: - Properties
+    
     private lazy var relativeFormatter: RelativeDateTimeFormatter = {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .full

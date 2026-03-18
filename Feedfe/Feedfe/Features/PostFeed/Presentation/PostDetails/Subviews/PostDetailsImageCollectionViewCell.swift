@@ -1,5 +1,5 @@
 //
-//  PostImageCell.swift
+//  PostDetailsImageCollectionViewCell.swift
 //  Feedfe
 //
 //  Created by Mykola Zabrotskyi on 12.03.2026.
@@ -8,13 +8,12 @@
 import UIKit
 import Kingfisher
 
-final class PostImageCell: UICollectionViewCell {
+final class PostDetailsImageCollectionViewCell: UICollectionViewCell {
     
     // MARK: - UI Components
     
     private let postImageView: UIImageView = {
         let imageView = UIImageView()
-        
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = Constant.cornerRadius
@@ -22,7 +21,6 @@ final class PostImageCell: UICollectionViewCell {
         imageView.layer.borderColor = Constant.color.cgColor
         imageView.backgroundColor = .systemGray3
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        
         return imageView
     }()
     
@@ -30,6 +28,7 @@ final class PostImageCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        
         setupUI()
         setupLayout()
     }
@@ -46,7 +45,7 @@ final class PostImageCell: UICollectionViewCell {
 
 // MARK: - Private Methods
 
-private extension PostImageCell {
+private extension PostDetailsImageCollectionViewCell {
     
     // MARK: - Setup
     
@@ -67,7 +66,7 @@ private extension PostImageCell {
 
 // MARK: - Constants
 
-private extension PostImageCell {
+private extension PostDetailsImageCollectionViewCell {
     enum Constant {
         static let color = UIColor.systemIndigo
         static let cornerRadius: CGFloat = 6.0

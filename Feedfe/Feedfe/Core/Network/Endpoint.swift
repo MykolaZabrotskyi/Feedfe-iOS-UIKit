@@ -16,8 +16,17 @@ protocol Endpoint {
 }
 
 extension Endpoint {
+    var headers: [String: String]? {
+        return ["Content-Type": "application/json"]
+    }
+    
+    var parameters: [String: Any]? {
+        return nil
+    }
+    
     func urlRequest() throws -> URLRequest {
         let url = baseURL.appendingPathComponent(path)
+        
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
         request.allHTTPHeaderFields = headers
@@ -26,6 +35,7 @@ extension Endpoint {
             if method == .get {
                 var components = URLComponents(url: url, resolvingAgainstBaseURL: false)
                 components?.queryItems = parameters.map { URLQueryItem(name: $0.key, value: "\($0.value)") }
+                
                 request.url = components?.url
             } else {
                 request.httpBody = try JSONSerialization.data(withJSONObject: parameters)

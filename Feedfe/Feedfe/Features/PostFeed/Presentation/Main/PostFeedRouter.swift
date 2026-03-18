@@ -1,5 +1,5 @@
 //
-//  FeedRouter.swift
+//  PostFeedRouter.swift
 //  Feedfe
 //
 //  Created by Mykola Zabrotskyi on 05.03.2026.
@@ -7,20 +7,19 @@
 
 import UIKit
 
-protocol FeedRouterProtocol: AnyObject {
+protocol PostFeedRouterProtocol: AnyObject {
     func routeToDetails(with postId: String)
 }
 
-final class FeedRouter: BaseRouter {
+final class PostFeedRouter: BaseRouter {
     
 }
 
 // MARK: - PostFeedRouterProtocol
 
-extension FeedRouter: FeedRouterProtocol {
+extension PostFeedRouter: PostFeedRouterProtocol {
     func routeToDetails(with postId: String) {
-        let detailsViewController = DetailsAssembly.build(with: postId)
-        
+        let detailsViewController = PostDetailsAssembly.build(with: postId)
         push(detailsViewController)
     }
 }

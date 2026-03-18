@@ -1,5 +1,5 @@
 //
-//  PostTitleCell.swift
+//  PostDetailsTitleCollectionViewCell.swift
 //  Feedfe
 //
 //  Created by Mykola Zabrotskyi on 12.03.2026.
@@ -7,18 +7,16 @@
 
 import UIKit
 
-final class PostTitleCell: UICollectionViewCell {
+final class PostDetailsTitleCollectionViewCell: UICollectionViewCell {
     
     // MARK: - UI Components
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        
         label.font = Constant.font
         label.textColor = Constant.color
         label.numberOfLines = 0
         label.translatesAutoresizingMaskIntoConstraints = false
-        
         return label
     }()
     
@@ -26,6 +24,7 @@ final class PostTitleCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        
         setupUI()
         setupLayout()
     }
@@ -41,7 +40,7 @@ final class PostTitleCell: UICollectionViewCell {
 
 // MARK: - Private Methods
 
-private extension PostTitleCell {
+private extension PostDetailsTitleCollectionViewCell {
     
     // MARK: - Setup
     
@@ -61,7 +60,7 @@ private extension PostTitleCell {
 
 // MARK: - Constants
 
-private extension PostTitleCell {
+private extension PostDetailsTitleCollectionViewCell {
     enum Constant {
         static let color = UIColor.systemIndigo
         static let font = UIFont.systemFont(ofSize: 21, weight: .bold)

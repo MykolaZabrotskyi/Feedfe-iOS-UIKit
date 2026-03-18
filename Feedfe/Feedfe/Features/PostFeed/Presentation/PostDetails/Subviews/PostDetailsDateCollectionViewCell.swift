@@ -1,5 +1,5 @@
 //
-//  PostDateCell.swift
+//  PostDetailsDateCollectionViewCell.swift
 //  Feedfe
 //
 //  Created by Mykola Zabrotskyi on 12.03.2026.
@@ -7,19 +7,17 @@
 
 import UIKit
 
-final class PostDateCell: UICollectionViewCell {
+final class PostDetailsDateCollectionViewCell: UICollectionViewCell {
     
     // MARK: - UI Components
     
     private let dateLabel: UILabel = {
         let label = UILabel()
-        
         label.font = Constant.font
         label.textColor = Constant.color
         label.numberOfLines = 1
         label.textAlignment = .right
         label.translatesAutoresizingMaskIntoConstraints = false
-        
         return label
     }()
     
@@ -27,6 +25,7 @@ final class PostDateCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        
         setupUI()
         setupLayout()
     }
@@ -42,7 +41,7 @@ final class PostDateCell: UICollectionViewCell {
 
 // MARK: - Private Methods
 
-private extension PostDateCell {
+private extension PostDetailsDateCollectionViewCell {
     
     // MARK: - Setup
     
@@ -62,7 +61,7 @@ private extension PostDateCell {
 
 // MARK: - Constants
 
-private extension PostDateCell {
+private extension PostDetailsDateCollectionViewCell {
     enum Constant {
         static let color = UIColor.systemGray2
         static let font = UIFont.systemFont(ofSize: 15, weight: .regular)

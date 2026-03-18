@@ -1,5 +1,5 @@
 //
-//  PostLikesCell.swift
+//  PostDetailsLikesCountCollectionViewCell.swift
 //  Feedfe
 //
 //  Created by Mykola Zabrotskyi on 12.03.2026.
@@ -7,41 +7,35 @@
 
 import UIKit
 
-final class PostLikesCell: UICollectionViewCell {
+final class PostDetailsLikesCollectionViewCell: UICollectionViewCell {
     
     // MARK: - UI Components
     
     private let likesImageView: UIImageView = {
         let imageView = UIImageView()
-        
         imageView.image = Constant.systemImage
         imageView.tintColor = Constant.color
         imageView.contentMode = .scaleAspectFit
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        
         return imageView
     }()
     
     private let likesLabel: UILabel = {
         let label = UILabel()
-        
         label.font = Constant.font
         label.textColor = Constant.color
         label.numberOfLines = 1
         label.textAlignment = .left
         label.translatesAutoresizingMaskIntoConstraints = false
-        
         return label
     }()
     
     private let stackView: UIStackView = {
         let stackView = UIStackView()
-        
         stackView.axis = .horizontal
         stackView.spacing = Constant.likesStackView
         stackView.alignment = .center
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        
         return stackView
     }()
     
@@ -49,6 +43,7 @@ final class PostLikesCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        
         setupUI()
         setupLayout()
     }
@@ -57,14 +52,14 @@ final class PostLikesCell: UICollectionViewCell {
     
     // MARK: - Configuration
     
-    func configure(likes: String) {
-        likesLabel.text = likes
+    func configure(likesCount: String) {
+        likesLabel.text = likesCount
     }
 }
 
 // MARK: - Private Methods
 
-private extension PostLikesCell {
+private extension PostDetailsLikesCollectionViewCell {
     // MARK: - Setup
     
     func setupUI() {
@@ -86,12 +81,11 @@ private extension PostLikesCell {
 
 // MARK: - Constants
 
-private extension PostLikesCell {
+private extension PostDetailsLikesCollectionViewCell {
     enum Constant {
         static let color = UIColor.systemIndigo
         static let font = UIFont.systemFont(ofSize: 18, weight: .semibold)
         static let likesStackView: CGFloat = 6.0
-        
         static let systemImage = UIImage(
             systemName: "heart",
             withConfiguration: UIImage.SymbolConfiguration(pointSize: 18, weight: .semibold)

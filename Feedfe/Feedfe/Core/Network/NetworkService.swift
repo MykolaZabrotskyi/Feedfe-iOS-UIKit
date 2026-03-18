@@ -30,11 +30,9 @@ extension NetworkService: NetworkServiceProtocol {
     func fetch<T: Decodable>(from endpoint: Endpoint) async throws -> T {
         let request = try endpoint.urlRequest()
         let (data, response) = try await session.data(for: request)
-        
         guard let httpResponse = response as? HTTPURLResponse else {
             throw NetworkError.invalidResponse
         }
-        
         try validateResponse(httpResponse)
         
         do {
@@ -53,10 +51,13 @@ private extension NetworkService {
         switch response.statusCode {
         case 200...299:
             return
+            
         case 400...499:
             throw NetworkError.clientError(response.statusCode)
+            
         case 500...599:
             throw NetworkError.serverError(response.statusCode)
+            
         default:
             throw NetworkError.unknownError(response.statusCode)
         }

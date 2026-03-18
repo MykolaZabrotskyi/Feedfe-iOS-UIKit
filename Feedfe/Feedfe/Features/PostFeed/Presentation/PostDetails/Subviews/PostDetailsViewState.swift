@@ -1,5 +1,5 @@
 //
-//  PostDetailViewState.swift
+//  PostDetailsViewState.swift
 //  Feedfe
 //
 //  Created by Mykola Zabrotskyi on 10.03.2026.
@@ -7,10 +7,10 @@
 
 import Foundation
 
-struct PostDetailViewState {
-    let timestamp: String
+struct PostDetailsViewState {
+    let date: String
     let title: String
     let text: String
-    let postImage: URL?
+    let image: URL?
     let likesCount: String
 }

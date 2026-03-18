@@ -1,5 +1,5 @@
 //
-//  DetailsAssembly.swift
+//  PostDetailsAssembly.swift
 //  Feedfe
 //
 //  Created by Mykola Zabrotskyi on 10.03.2026.
@@ -7,26 +7,23 @@
 
 import UIKit
 
-final class DetailsAssembly {
-    static func build(with postId: String) -> UIViewController {
-        let viewController = DetailsViewController()
-        let router = DetailsRouter(viewController: viewController)
+final class PostDetailsAssembly {
+    static func build(with postID: String) -> UIViewController {
+        let viewController = PostDetailsViewController()
+        let router = PostDetailsRouter(viewController: viewController)
         
         let networkService = DIContainer.shared.resolve(type: NetworkServiceProtocol.self)
         let dateFormatter = DIContainer.shared.resolve(type: DateFormatterProtocol.self)
-        
-        let feedAPIService = FeedAPIService(networkService: networkService)
-        
-        let presenter = DetailsPresenter(
+        let postAPIService = PostAPIService(networkService: networkService)
+        let presenter = PostDetailsPresenter(
             viewController: viewController,
             router: router,
-            postId: postId,
+            postID: postID,
             dateFormatter: dateFormatter,
-            feedAPIService: feedAPIService
+            postAPIService: postAPIService
         )
         
         viewController.inject(presenter: presenter)
-        
         return viewController
     }
 }
