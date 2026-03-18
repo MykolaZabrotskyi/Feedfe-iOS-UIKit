@@ -8,7 +8,6 @@
 import Foundation
 
 protocol PostFeedPresenterProtocol: AnyObject {
-    var postsCount: Int { get }
     func fetchPostFeed()
     func toggleExpand(at postID: String)
     func didSelectPost(at index: Int)
@@ -25,8 +24,8 @@ final class PostFeedPresenter {
     private let postAPIService: PostAPIServiceProtocol
     private let dateFormatter: DateFormatterProtocol
     
-    private var allPosts: [PostFeedItemViewState] = []
-    private var currentPosts: [PostFeedItemViewState] = []
+    private var fetchedPosts: [PostFeedItemViewState] = []
+    private var displayedPosts: [PostFeedItemViewState] = []
     private var currentDisplayMode: CustomTabSelectedMode = .list
     
     private var searchTask: Task<Void, Never>?
@@ -49,17 +48,13 @@ final class PostFeedPresenter {
 // MARK: - PostFeedPresenterProtocol
 
 extension PostFeedPresenter: PostFeedPresenterProtocol {
-    var postsCount: Int {
-        return currentPosts.count
-    }
-    
     func fetchPostFeed() {
         Task {
             do {
                 let response = try await postAPIService.fetchPostFeed()
-                allPosts = response.posts.compactMap { self.mapToCellModel(from: $0) }
+                fetchedPosts = response.posts.compactMap { self.mapToCellModel(from: $0) }
                 
-                currentPosts = allPosts
+                displayedPosts = fetchedPosts
                 
                 await MainActor.run {
                     updateViewState()
@@ -79,44 +74,42 @@ extension PostFeedPresenter: PostFeedPresenterProtocol {
     
     func toggleExpand(at postID: String) {
         guard
-            let indexInCurrentPosts = currentPosts.firstIndex(where: { $0.id == postID }),
-            let indexInAllPosts = allPosts.firstIndex(where: { $0.id == postID })
+            let indexInCurrentPosts = displayedPosts.firstIndex(where: { $0.id == postID }),
+            let indexInAllPosts = fetchedPosts.firstIndex(where: { $0.id == postID })
         else {
             return
         }
         
-        currentPosts[indexInCurrentPosts].isExpanded.toggle()
-        currentPosts[indexInCurrentPosts].expandButtonTitle = currentPosts[indexInCurrentPosts].isExpanded
+        displayedPosts[indexInCurrentPosts].isExpanded.toggle()
+        displayedPosts[indexInCurrentPosts].expandButtonTitle = displayedPosts[indexInCurrentPosts].isExpanded
         ? Constant.Text.collapse
         : Constant.Text.expand
         
-        allPosts[indexInAllPosts] = currentPosts[indexInCurrentPosts]
+        fetchedPosts[indexInAllPosts] = displayedPosts[indexInCurrentPosts]
         
         updateViewState()
     }
     
     func didSelectPost(at index: Int) {
-        let selectedPostId = currentPosts[index].id
+        let selectedPostId = displayedPosts[index].id
         router.routeToDetails(with: selectedPostId)
     }
     
     func search(with query: String) {
         searchTask?.cancel()
         
-        if query.isEmpty {
-            currentPosts = allPosts
+        if query.count < 2 {
+            displayedPosts = fetchedPosts
             updateViewState()
-        } else if query.count < 2 {
-            return
         } else {
             searchTask = Task {
                 do {
-                    try await Task.sleep(nanoseconds: 500_000_000)
+                    try await Task.sleep(nanoseconds: 200_000_000)
                     
                     let result = try await simulateNetworkSearch(query: query)
                     
                     await MainActor.run {
-                        currentPosts = result
+                        displayedPosts = result
                         updateViewState()
                     }
                 } catch is CancellationError {
@@ -166,15 +159,15 @@ private extension PostFeedPresenter {
         case .gallery: sectionType = .gallery
         }
         
-        let section = PostFeedViewState.Section(type: sectionType, items: currentPosts)
+        let section = PostFeedViewState.Section(type: sectionType, items: displayedPosts)
         let viewState = PostFeedViewState(sections: [section])
         viewController?.render(with: viewState)
     }
     
     func simulateNetworkSearch(query: String) async throws -> [PostFeedItemViewState] {
-        try await Task.sleep(nanoseconds: 1_000_000_000)
+        try await Task.sleep(nanoseconds: 200_000_000)
         
-        return allPosts.filter { post in
+        return fetchedPosts.filter { post in
             post.previewText.localizedCaseInsensitiveContains(query)
         }
     }

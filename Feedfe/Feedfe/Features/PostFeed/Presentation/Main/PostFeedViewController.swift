@@ -58,6 +58,7 @@ final class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeCollectionViewLayout())
         collectionView.backgroundColor = .systemBackground
         collectionView.register(cell: PostFeedCollectionViewCell.self)
+        collectionView.keyboardDismissMode = .onDrag
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()
