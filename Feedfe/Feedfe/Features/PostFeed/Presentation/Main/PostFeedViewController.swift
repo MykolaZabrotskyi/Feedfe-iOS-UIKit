@@ -29,6 +29,20 @@ final class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol
     
     // MARK: - UI Components
     
+    private lazy var searchBar: UISearchBar = {
+        let searchBar = UISearchBar()
+        searchBar.placeholder = Constant.SearchBar.placeholder
+        searchBar.searchBarStyle = .minimal
+        searchBar.tintColor = Constant.Color.main
+        if let customClearIcon = Constant.SearchBar.clearIcon {
+            let templateImage = customClearIcon.withRenderingMode(.alwaysTemplate)
+            searchBar.setImage(templateImage, for: .clear, state: .normal)
+        }
+        searchBar.delegate = self
+        searchBar.translatesAutoresizingMaskIntoConstraints = false
+        return searchBar
+    }()
+    
     private lazy var tabView: CustomTabView = {
         let view = CustomTabView(
             tabTitles: Constant.CustomTab.titles,
@@ -44,6 +58,7 @@ final class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeCollectionViewLayout())
         collectionView.backgroundColor = .systemBackground
         collectionView.register(cell: PostFeedCollectionViewCell.self)
+        collectionView.keyboardDismissMode = .onDrag
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()
@@ -67,6 +82,16 @@ final class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol
         
         presenter.fetchPostFeed()
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
+    }
 }
 
 // MARK: - CustomTabViewDelegate
@@ -89,6 +114,18 @@ extension PostFeedViewController: UICollectionViewDelegate {
     }
 }
 
+// MARK: - UISearchBarDelegate
+
+extension PostFeedViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        presenter.search(with: searchText)
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+    }
+}
+
 // MARK: - PostFeedViewControllerProtocol
 
 extension PostFeedViewController: PostFeedViewControllerProtocol {
@@ -101,9 +138,10 @@ extension PostFeedViewController: PostFeedViewControllerProtocol {
         for section in viewState.sections {
             snapshot.appendSections([section.type])
             snapshot.appendItems(section.items, toSection: section.type)
+            snapshot.reloadItems(section.items)
         }
         
-        dataSource.apply(snapshot, animatingDifferences: true)
+        dataSource.apply(snapshot, animatingDifferences: false)
     }
     
     func displayError(_ message: String) {
@@ -187,6 +225,7 @@ private extension PostFeedViewController {
     
     func setupUI() {
         view.addSubview(mainVerticalStackView)
+        mainVerticalStackView.addArrangedSubview(searchBar)
         mainVerticalStackView.addArrangedSubview(tabView)
         mainVerticalStackView.addArrangedSubview(collectionView)
     }
@@ -219,7 +258,7 @@ private extension PostFeedViewController {
             cell.configure(with: sectionItem, sectionType: sectionType)
             
             cell.onExpandTapped = { [weak self] in
-                self?.presenter.toggleExpand(at: indexPath.item)
+                self?.presenter.toggleExpand(at: sectionItem.id)
             }
             
             return cell
@@ -232,6 +271,12 @@ private extension PostFeedViewController {
 
 private extension PostFeedViewController {
     enum Constant {
+        enum SearchBar {
+            static let placeholder = "Search"
+            static let clearIcon = UIImage(systemName: "xmark.circle.fill")
+            static let height: CGFloat = 50.0
+        }
+        
         enum CustomTab {
             static let titles = ["List", "Grid", "Gallery"]
             static let height: CGFloat = 50.0
