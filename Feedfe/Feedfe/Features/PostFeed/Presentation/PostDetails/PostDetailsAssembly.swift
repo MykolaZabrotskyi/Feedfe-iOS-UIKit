@@ -15,12 +15,13 @@ final class PostDetailsAssembly {
         let networkService = DIContainer.shared.resolve(type: NetworkServiceProtocol.self)
         let dateFormatter = DIContainer.shared.resolve(type: DateFormatterProtocol.self)
         let postAPIService = PostAPIService(networkService: networkService)
+        let viewStateFactory = PostDetailsViewStateFactory(dateFormatter: dateFormatter)
         let presenter = PostDetailsPresenter(
             viewController: viewController,
             router: router,
             postID: postID,
-            dateFormatter: dateFormatter,
-            postAPIService: postAPIService
+            postAPIService: postAPIService,
+            viewStateFactory: viewStateFactory
         )
         
         viewController.inject(presenter: presenter)

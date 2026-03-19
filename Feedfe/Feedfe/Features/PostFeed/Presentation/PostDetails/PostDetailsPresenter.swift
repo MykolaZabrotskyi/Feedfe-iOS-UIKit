@@ -18,10 +18,10 @@ final class PostDetailsPresenter {
     private weak var viewController: PostDetailsViewControllerProtocol?
     private let router: PostDetailsRouterProtocol
     private let postAPIService: PostAPIServiceProtocol
-    private let dateFormatter: DateFormatterProtocol
+    private let viewStateFactory: PostDetailsViewStateFactoryProtocol
     
     private let postID: String
-    private var post: PostDetailsViewState?
+    private var post: PostDetailsDTO?
     
     // MARK: - Init
     
@@ -29,14 +29,14 @@ final class PostDetailsPresenter {
         viewController: PostDetailsViewControllerProtocol,
         router: PostDetailsRouterProtocol,
         postID: String,
-        dateFormatter: DateFormatterProtocol,
-        postAPIService: PostAPIServiceProtocol
+        postAPIService: PostAPIServiceProtocol,
+        viewStateFactory: PostDetailsViewStateFactoryProtocol
     ) {
         self.router = router
         self.viewController = viewController
         self.postID = postID
-        self.dateFormatter = dateFormatter
         self.postAPIService = postAPIService
+        self.viewStateFactory = viewStateFactory
     }
 }
 
@@ -47,13 +47,15 @@ extension PostDetailsPresenter: PostDetailsPresenterProtocol {
         Task {
             do {
                 let response = try await postAPIService.fetchPostDetails(with: postID)
-                guard let viewState = self.mapToViewState(from: response.post) else {
+                let state = PostDetailsState(post: response.post)
+                guard let viewState = self.viewStateFactory.make(from: state) else {
                     throw Constant.Error.corruptedData
                 }
-                self.post = viewState
+                
+                self.post = response.post
                 
                 await MainActor.run {
-                    self.viewController?.displayDetails(with: viewState)
+                    self.viewController?.render(with: viewState)
                 }
             } catch {
                 await MainActor.run {
@@ -63,31 +65,6 @@ extension PostDetailsPresenter: PostDetailsPresenterProtocol {
                 }
             }
         }
-    }
-}
-
-// MARK: - Private Methods
-
-private extension PostDetailsPresenter {
-    func mapToViewState(from dto: PostDetailsDTO) -> PostDetailsViewState? {
-        guard
-            let timestamp = dto.timestamp,
-            let title = dto.title,
-            let text = dto.text,
-            let image = dto.image,
-            let likesCount = dto.likesCount
-        else {
-            return nil
-        }
-        
-        let dateString = dateFormatter.formatRelativeDate(from: timestamp)
-        return PostDetailsViewState(
-            date: dateString,
-            title: title,
-            text: text,
-            image: URL(string: image),
-            likesCount: String(likesCount)
-        )
     }
 }
 
