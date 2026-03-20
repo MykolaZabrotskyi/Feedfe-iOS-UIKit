@@ -5,8 +5,9 @@
 //  Created by Mykola Zabrotskyi on 04.03.2026.
 //
 
-import UIKit
 import CustomTab
+import SnapKit
+import UIKit
 
 enum CustomTabSelectedMode: Int, CaseIterable {
     case list
@@ -39,7 +40,6 @@ final class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol
             searchBar.setImage(templateImage, for: .clear, state: .normal)
         }
         searchBar.delegate = self
-        searchBar.translatesAutoresizingMaskIntoConstraints = false
         return searchBar
     }()
     
@@ -50,7 +50,6 @@ final class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol
             secondColor: Constant.Color.second
         )
         view.delegate = self
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -59,7 +58,6 @@ final class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol
         collectionView.backgroundColor = .systemBackground
         collectionView.register(cell: PostFeedCollectionViewCell.self)
         collectionView.keyboardDismissMode = .onDrag
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()
     
@@ -67,7 +65,6 @@ final class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol
         let stackView = UIStackView()
         stackView.axis = .vertical
         stackView.spacing = Constant.Spacing.mainVerticalStackView
-        stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }()
     
@@ -155,7 +152,7 @@ extension PostFeedViewController: PostFeedViewControllerProtocol {
 
 private extension PostFeedViewController {
     func makeCollectionViewLayout() -> UICollectionViewCompositionalLayout {
-        return UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
+        return UICollectionViewCompositionalLayout { [weak self] sectionIndex, _ in
             guard let self else {
                 return nil
             }
@@ -238,6 +235,19 @@ private extension PostFeedViewController {
             mainVerticalStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             mainVerticalStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
+        
+        mainVerticalStackView.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide)
+            make.leading.bottom.trailing.equalToSuperview()
+        }
+        
+        tabView.snp.makeConstraints { make in
+            make.height.equalTo(Constant.CustomTab.height)
+        }
+        
+        searchBar.snp.makeConstraints { make in
+            make.height.equalTo(Constant.SearchBar.height)
+        }
     }
     
     func setupCollectionView() {
@@ -245,9 +255,7 @@ private extension PostFeedViewController {
     }
     
     func setupDataSource() -> DataSource {
-        let dataSource = DataSource(collectionView: collectionView) { [weak self] (
-            collectionView, indexPath, sectionItem
-        ) -> UICollectionViewCell? in
+        let dataSource = DataSource(collectionView: collectionView) { [weak self] collectionView, indexPath, sectionItem -> UICollectionViewCell? in
             guard let self else {
                 return nil
             }

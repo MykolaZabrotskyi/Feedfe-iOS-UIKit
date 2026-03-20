@@ -83,7 +83,6 @@ private extension PostFeedViewStateFactory {
     }
 }
 
-
 // MARK: - Constant
 
 private extension PostFeedViewStateFactory {

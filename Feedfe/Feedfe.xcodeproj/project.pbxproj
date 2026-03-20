@@ -8,6 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		377C02A02F64092400A57919 /* CustomTab in Frameworks */ = {isa = PBXBuildFile; productRef = 377C029F2F64092400A57919 /* CustomTab */; };
+		37BD62592F6D5E9500A544A2 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 37BD62582F6D5E9500A544A2 /* SnapKit */; };
+		37BD625C2F6D60D400A544A2 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 37BD625B2F6D60D400A544A2 /* Alamofire */; };
+		37BD62612F6D619100A544A2 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 37BD62602F6D619100A544A2 /* FirebaseAnalytics */; };
+		37BD62632F6D619100A544A2 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 37BD62622F6D619100A544A2 /* FirebaseCrashlytics */; };
+		37BD626B2F6D63C200A544A2 /* DebugSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 37BD626A2F6D63C200A544A2 /* DebugSwift */; };
 		37E732632F604E21005BCFDA /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 37E732622F604E21005BCFDA /* Kingfisher */; };
 /* End PBXBuildFile section */
 
@@ -41,7 +46,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				37BD62592F6D5E9500A544A2 /* SnapKit in Frameworks */,
+				37BD625C2F6D60D400A544A2 /* Alamofire in Frameworks */,
 				37E732632F604E21005BCFDA /* Kingfisher in Frameworks */,
+				37BD62632F6D619100A544A2 /* FirebaseCrashlytics in Frameworks */,
+				37BD62612F6D619100A544A2 /* FirebaseAnalytics in Frameworks */,
+				37BD626B2F6D63C200A544A2 /* DebugSwift in Frameworks */,
 				377C02A02F64092400A57919 /* CustomTab in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -72,9 +82,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3711CF292F5826E50069F69A /* Build configuration list for PBXNativeTarget "Feedfe" */;
 			buildPhases = (
+				37BD62562F6D5CA200A544A2 /* SwiftLint */,
 				3711CF122F5826E40069F69A /* Sources */,
 				3711CF132F5826E40069F69A /* Frameworks */,
 				3711CF142F5826E40069F69A /* Resources */,
+				37BD62642F6D61AA00A544A2 /* Firebase Crashlytics */,
 			);
 			buildRules = (
 			);
@@ -87,6 +99,11 @@
 			packageProductDependencies = (
 				37E732622F604E21005BCFDA /* Kingfisher */,
 				377C029F2F64092400A57919 /* CustomTab */,
+				37BD62582F6D5E9500A544A2 /* SnapKit */,
+				37BD625B2F6D60D400A544A2 /* Alamofire */,
+				37BD62602F6D619100A544A2 /* FirebaseAnalytics */,
+				37BD62622F6D619100A544A2 /* FirebaseCrashlytics */,
+				37BD626A2F6D63C200A544A2 /* DebugSwift */,
 			);
 			productName = Feedfe;
 			productReference = 3711CF162F5826E40069F69A /* Feedfe.app */;
@@ -119,6 +136,10 @@
 			packageReferences = (
 				37E732612F604E21005BCFDA /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				377C029E2F64092400A57919 /* XCRemoteSwiftPackageReference "CustomTab-iOS-UIKit" */,
+				37BD62572F6D5E9500A544A2 /* XCRemoteSwiftPackageReference "SnapKit" */,
+				37BD625A2F6D60D400A544A2 /* XCRemoteSwiftPackageReference "Alamofire" */,
+				37BD625F2F6D619100A544A2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				37BD62692F6D63C200A544A2 /* XCRemoteSwiftPackageReference "DebugSwift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3711CF172F5826E40069F69A /* Products */;
@@ -140,6 +161,49 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		37BD62562F6D5CA200A544A2 /* SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SwiftLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [[ -f \"/opt/homebrew/bin/swiftlint\" ]]; then\n  /opt/homebrew/bin/swiftlint\nelif [[ -f \"/usr/local/bin/swiftlint\" ]]; then\n  /usr/local/bin/swiftlint\nelse\n  echo \"error: SwiftLint not found. Install it with Homebrew.\"\n  exit 1\nfi\n";
+		};
+		37BD62642F6D61AA00A544A2 /* Firebase Crashlytics */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${TARGET_NAME}",
+				"$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
+			);
+			name = "Firebase Crashlytics";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		3711CF122F5826E40069F69A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -158,6 +222,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = XW8R778NMA;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Feedfe/App/Resources/Info.plist;
@@ -251,7 +316,7 @@
 				DEVELOPMENT_TEAM = XW8R778NMA;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -316,7 +381,7 @@
 				DEVELOPMENT_TEAM = XW8R778NMA;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -368,6 +433,38 @@
 				kind = branch;
 			};
 		};
+		37BD62572F6D5E9500A544A2 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.7.1;
+			};
+		};
+		37BD625A2F6D60D400A544A2 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.11.1;
+			};
+		};
+		37BD625F2F6D619100A544A2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.11.0;
+			};
+		};
+		37BD62692F6D63C200A544A2 /* XCRemoteSwiftPackageReference "DebugSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/DebugSwift/DebugSwift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.13.0;
+			};
+		};
 		37E732612F604E21005BCFDA /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/onevcat/Kingfisher";
@@ -383,6 +480,31 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 377C029E2F64092400A57919 /* XCRemoteSwiftPackageReference "CustomTab-iOS-UIKit" */;
 			productName = CustomTab;
+		};
+		37BD62582F6D5E9500A544A2 /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 37BD62572F6D5E9500A544A2 /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+		37BD625B2F6D60D400A544A2 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 37BD625A2F6D60D400A544A2 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+		37BD62602F6D619100A544A2 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 37BD625F2F6D619100A544A2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		37BD62622F6D619100A544A2 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 37BD625F2F6D619100A544A2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+		37BD626A2F6D63C200A544A2 /* DebugSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 37BD62692F6D63C200A544A2 /* XCRemoteSwiftPackageReference "DebugSwift" */;
+			productName = DebugSwift;
 		};
 		37E732622F604E21005BCFDA /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;

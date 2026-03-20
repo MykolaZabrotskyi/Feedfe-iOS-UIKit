@@ -5,6 +5,7 @@
 //  Created by Mykola Zabrotskyi on 05.03.2026.
 //
 
+import SnapKit
 import UIKit
 
 nonisolated struct PostFeedItemViewState: Hashable {
@@ -42,21 +43,18 @@ final class PostFeedCollectionViewCell: UICollectionViewCell {
         let view = UIView()
         view.backgroundColor = Constant.mainColor.withAlphaComponent(0.1)
         view.layer.cornerRadius = Constant.cornerRadius
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.textColor = Constant.mainColor
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private let previewLabel: UILabel = {
         let label = UILabel()
         label.textColor = UIColor.systemGray
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -64,7 +62,6 @@ final class PostFeedCollectionViewCell: UICollectionViewCell {
         let imageView = UIImageView()
         imageView.tintColor = Constant.mainColor
         imageView.contentMode = .scaleAspectFit
-        imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
     
@@ -72,7 +69,6 @@ final class PostFeedCollectionViewCell: UICollectionViewCell {
         let label = UILabel()
         label.textColor = Constant.mainColor
         label.numberOfLines = 1
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -81,7 +77,6 @@ final class PostFeedCollectionViewCell: UICollectionViewCell {
         stackView.axis = .horizontal
         stackView.spacing = Constant.Spacing.likesStackView
         stackView.alignment = .center
-        stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }()
     
@@ -89,7 +84,6 @@ final class PostFeedCollectionViewCell: UICollectionViewCell {
         let label = UILabel()
         label.textColor = UIColor.systemGray2
         label.numberOfLines = 1
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -102,7 +96,6 @@ final class PostFeedCollectionViewCell: UICollectionViewCell {
         button.layer.cornerRadius = Constant.cornerRadius
         button.clipsToBounds = true
         button.addTarget(self, action: #selector(expandButtonTapped), for: .touchUpInside)
-        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
@@ -110,7 +103,6 @@ final class PostFeedCollectionViewCell: UICollectionViewCell {
         let stackView = UIStackView()
         stackView.axis = .horizontal
         stackView.distribution = .equalSpacing
-        stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }()
     
@@ -119,7 +111,6 @@ final class PostFeedCollectionViewCell: UICollectionViewCell {
         stackView.axis = .vertical
         stackView.spacing = Constant.Spacing.verticalStackView
         stackView.distribution = .equalSpacing
-        stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }()
     
@@ -127,7 +118,6 @@ final class PostFeedCollectionViewCell: UICollectionViewCell {
         let stackView = UIStackView()
         stackView.axis = .vertical
         stackView.spacing = Constant.Spacing.cellStackView
-        stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }()
     
@@ -207,7 +197,7 @@ private extension PostFeedCollectionViewCell {
     
     // MARK: - Setup
     
-    func setupUI(){
+    func setupUI() {
         contentView.addSubview(containerView)
         containerView.addSubview(cellStackView)
         
@@ -220,7 +210,6 @@ private extension PostFeedCollectionViewCell {
         verticalStackView.addArrangedSubview(previewLabel)
         verticalStackView.addArrangedSubview(expandButton)
         verticalStackView.addArrangedSubview(horizontalStackView)
-        
         
         cellStackView.addArrangedSubview(titleLabel)
         cellStackView.addArrangedSubview(verticalStackView)
@@ -236,17 +225,13 @@ private extension PostFeedCollectionViewCell {
     }
     
     func setupLayout() {
-        NSLayoutConstraint.activate([
-            containerView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-            containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            
-            cellStackView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: Constant.padding),
-            cellStackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -Constant.padding),
-            cellStackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: Constant.padding),
-            cellStackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -Constant.padding),
-        ])
+        containerView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+        
+        cellStackView.snp.makeConstraints { make in
+            make.edges.equalTo(containerView).inset(Constant.padding)
+        }
     }
     
     private func applyStyle(for sectionType: PostFeedViewState.SectionType) {

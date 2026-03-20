@@ -5,6 +5,7 @@
 //  Created by Mykola Zabrotskyi on 10.03.2026.
 //
 
+import SnapKit
 import UIKit
 
 protocol PostDetailsViewControllerProtocol: AnyObject {
@@ -18,7 +19,6 @@ final class PostDetailsViewController: BaseViewController<PostDetailsPresenterPr
     
     private let detailsView: PostDetailsView = {
         let view = PostDetailsView()
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -28,7 +28,6 @@ final class PostDetailsViewController: BaseViewController<PostDetailsPresenterPr
         super.viewDidLoad()
         setupUI()
         setupLayout()
-        
         presenter.fetchPostDetails()
     }
 }
@@ -61,12 +60,9 @@ private extension PostDetailsViewController {
     }
     
     func setupLayout() {
-        NSLayoutConstraint.activate([
-            detailsView.topAnchor.constraint(equalTo: view.topAnchor),
-            detailsView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            detailsView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            detailsView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-        ])
+        detailsView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
     }
 }
 
@@ -75,6 +71,5 @@ private extension PostDetailsViewController {
 private extension PostDetailsViewController {
     enum Constant {
         static let mainColor = UIColor.systemIndigo
-        static let spacing: CGFloat = 12.0
     }
 }
