@@ -5,7 +5,6 @@
 //  Created by Mykola Zabrotskyi on 13.03.2026.
 //
 
-
 struct PostDetailsDTO: Codable {
     let id: Int
     let timestamp: Int?

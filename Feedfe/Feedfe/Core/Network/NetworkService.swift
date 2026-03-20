@@ -5,6 +5,7 @@
 //
 //  https://medium.com/@gokhanvaris/creating-a-network-manager-in-swiftui-with-clean-code-principles-d767a0e93a9a
 
+import Alamofire
 import Foundation
 
 protocol NetworkServiceProtocol {
@@ -15,11 +16,11 @@ final class NetworkService {
     
     // MARK: - Properties
     
-    private let session: URLSession
+    private let session: Session
     
     // MARK: - Init
     
-    init(session: URLSession = .shared) {
+    init(session: Session = .default) {
         self.session = session
     }
 }
@@ -29,17 +30,25 @@ final class NetworkService {
 extension NetworkService: NetworkServiceProtocol {
     func fetch<T: Decodable>(from endpoint: Endpoint) async throws -> T {
         let request = try endpoint.urlRequest()
-        let (data, response) = try await session.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse else {
+        let dataResponse = await session.request(request).serializingData().response
+        
+        guard let httpResponse = dataResponse.response else {
             throw NetworkError.invalidResponse
         }
+        
         try validateResponse(httpResponse)
         
-        do {
-            let decoder = JSONDecoder()
-            return try decoder.decode(T.self, from: data)
-        } catch {
-            throw NetworkError.decodingFailed
+        switch dataResponse.result {
+        case .success(let data):
+            do {
+                let decoder = JSONDecoder()
+                return try decoder.decode(T.self, from: data)
+            } catch {
+                throw NetworkError.decodingFailed
+            }
+            
+        case .failure:
+            throw NetworkError.invalidResponse
         }
     }
 }

@@ -29,4 +29,3 @@ class BaseRouter {
         viewController?.navigationController?.popViewController(animated: animated)
     }
 }
-

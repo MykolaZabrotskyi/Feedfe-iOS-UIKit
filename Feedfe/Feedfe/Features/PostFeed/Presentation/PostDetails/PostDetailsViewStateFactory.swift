@@ -7,12 +7,12 @@
 
 import Foundation
 
-struct PostDetailsState {
+struct PostDetailsViewStateFactoryInput {
     let post: PostDetailsDTO
 }
 
 protocol PostDetailsViewStateFactoryProtocol {
-    func make(from state: PostDetailsState) -> PostDetailsViewState?
+    func make(from state: PostDetailsViewStateFactoryInput) -> PostDetailsViewState?
 }
 
 final class PostDetailsViewStateFactory {
@@ -33,7 +33,7 @@ final class PostDetailsViewStateFactory {
 // MARK: - PostDetailsViewStateFactoryProtocol
 
 extension PostDetailsViewStateFactory: PostDetailsViewStateFactoryProtocol {
-    func make(from state: PostDetailsState) -> PostDetailsViewState? {
+    func make(from state: PostDetailsViewStateFactoryInput) -> PostDetailsViewState? {
         guard
             let timestamp = state.post.timestamp,
             let title = state.post.title,
@@ -45,13 +45,12 @@ extension PostDetailsViewStateFactory: PostDetailsViewStateFactoryProtocol {
         }
         
         let dateString = dateFormatter.formatRelativeDate(from: timestamp)
-        return PostDetailsViewState(
+        return PostDetailsViewState(kind: .loaded(PostDetailsItemViewState(
             date: dateString,
             title: title,
             text: text,
             image: URL(string: image),
             likesCount: String(likesCount)
-        )
+        )))
     }
 }
-

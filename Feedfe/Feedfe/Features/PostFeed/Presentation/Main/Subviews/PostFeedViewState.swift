@@ -21,5 +21,10 @@ nonisolated struct PostFeedViewState: Hashable {
         let items: [SectionItem]
     }
     
-    let sections: [Section]
+    enum Kind: Hashable {
+        case error(String)
+        case loaded([Section])
+    }
+    
+    let kind: Kind
 }

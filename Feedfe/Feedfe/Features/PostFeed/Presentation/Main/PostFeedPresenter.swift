@@ -7,12 +7,16 @@
 
 import Foundation
 
+enum PostFeedPresenterAction {
+    case onLoad
+    case onPostExpanded(postID: String)
+    case onPostSelected(index: Int)
+    case onDisplayModeChanged(mode: CustomTabSelectedMode)
+    case onSearch(query: String)
+}
+
 protocol PostFeedPresenterProtocol: AnyObject {
-    func fetchPostFeed()
-    func toggleExpand(at postID: String)
-    func didSelectPost(at index: Int)
-    func didChangeDisplayMode(to mode: CustomTabSelectedMode)
-    func search(with query: String)
+    func perform(with action: PostFeedPresenterAction)
 }
 
 final class PostFeedPresenter {
@@ -49,7 +53,30 @@ final class PostFeedPresenter {
 // MARK: - PostFeedPresenterProtocol
 
 extension PostFeedPresenter: PostFeedPresenterProtocol {
-    func fetchPostFeed() {
+    func perform(with action: PostFeedPresenterAction) {
+        switch action {
+        case .onLoad:
+            performLoadAction()
+            
+        case .onPostExpanded(let postID):
+            performExpandAction(postID: postID)
+            
+        case .onPostSelected(let index):
+            performSelectAction(index: index)
+            
+        case .onDisplayModeChanged(let mode):
+            performDisplayModeChangedAction(mode: mode)
+            
+        case .onSearch(let query):
+            performSearchAction(query: query)
+        }
+    }
+}
+
+// MARK: - Private Methods
+
+private extension PostFeedPresenter {
+    func performLoadAction() {
         Task {
             do {
                 let response = try await postAPIService.fetchPostFeed()
@@ -61,18 +88,14 @@ extension PostFeedPresenter: PostFeedPresenterProtocol {
                 }
             } catch {
                 await MainActor.run {
-                    viewController?.displayError(error.localizedDescription)
+                    let errorState = PostFeedViewState(kind: .error(error.localizedDescription))
+                    viewController?.render(with: errorState)
                 }
             }
         }
     }
     
-    func didChangeDisplayMode(to mode: CustomTabSelectedMode) {
-        currentDisplayMode = mode
-        updateViewState()
-    }
-    
-    func toggleExpand(at postID: String) {
+    func performExpandAction(postID: String) {
         if expandedPostIDs.contains(postID) {
             expandedPostIDs.remove(postID)
         } else {
@@ -82,12 +105,17 @@ extension PostFeedPresenter: PostFeedPresenterProtocol {
         updateViewState()
     }
     
-    func didSelectPost(at index: Int) {
+    func performSelectAction(index: Int) {
         let selectedPostId = String(displayedPosts[index].id)
         router.routeToDetails(with: selectedPostId)
     }
     
-    func search(with query: String) {
+    func performDisplayModeChangedAction(mode: CustomTabSelectedMode) {
+        currentDisplayMode = mode
+        updateViewState()
+    }
+    
+    func performSearchAction(query: String) {
         searchTask?.cancel()
         
         if query.count < 2 {
@@ -108,19 +136,16 @@ extension PostFeedPresenter: PostFeedPresenterProtocol {
                     debugPrint(query)
                 } catch {
                     await MainActor.run {
-                        viewController?.displayError(error.localizedDescription)
+                        let errorState = PostFeedViewState(kind: .error(error.localizedDescription))
+                        viewController?.render(with: errorState)
                     }
                 }
             }
         }
     }
-}
-
-// MARK: - Private Methods
-
-private extension PostFeedPresenter {
+    
     func updateViewState() {
-        let state = PostFeedState(
+        let state = PostFeedViewStateFactoryInput(
             posts: displayedPosts,
             displayMode: currentDisplayMode,
             expandedPostIDs: expandedPostIDs

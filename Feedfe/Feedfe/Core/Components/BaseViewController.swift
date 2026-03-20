@@ -28,7 +28,6 @@ class BaseViewController<PresenterType>: UIViewController {
     }
 }
 
-
 private extension BaseViewController {
     
     // MARK: - Setup/Configuration

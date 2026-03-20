@@ -5,14 +5,14 @@
 //  Created by Mykola Zabrotskyi on 19.03.2026.
 //
 
-struct PostFeedState {
+struct PostFeedViewStateFactoryInput {
     let posts: [PostFeedDTO]
     let displayMode: CustomTabSelectedMode
     let expandedPostIDs: Set<String>
 }
 
 protocol PostFeedViewStateFactoryProtocol {
-    func make(from state: PostFeedState) -> PostFeedViewState
+    func make(from state: PostFeedViewStateFactoryInput) -> PostFeedViewState
 }
 
 final class PostFeedViewStateFactory {
@@ -33,7 +33,7 @@ final class PostFeedViewStateFactory {
 // MARK: - PostFeedViewStateFactoryProtocol
 
 extension PostFeedViewStateFactory: PostFeedViewStateFactoryProtocol {
-    func make(from state: PostFeedState) -> PostFeedViewState {
+    func make(from state: PostFeedViewStateFactoryInput) -> PostFeedViewState {
         let sectionItems = state.posts.compactMap {
             mapToItemViewState(from: $0, expandedPostIDs: state.expandedPostIDs)
         }
@@ -49,7 +49,7 @@ extension PostFeedViewStateFactory: PostFeedViewStateFactoryProtocol {
         }
         
         let section = PostFeedViewState.Section(type: sectionType, items: sectionItems)
-        return PostFeedViewState(sections: [section])
+        return PostFeedViewState(kind: .loaded([section]))
     }
 }
 
@@ -82,7 +82,6 @@ private extension PostFeedViewStateFactory {
         )
     }
 }
-
 
 // MARK: - Constant
 

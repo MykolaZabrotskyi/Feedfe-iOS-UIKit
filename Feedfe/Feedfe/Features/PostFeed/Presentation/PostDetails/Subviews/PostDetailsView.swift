@@ -5,8 +5,17 @@
 //  Created by Mykola Zabrotskyi on 12.03.2026.
 //
 
-import UIKit
 import Kingfisher
+import SnapKit
+import UIKit
+
+struct PostDetailsItemViewState {
+    let date: String
+    let title: String
+    let text: String
+    let image: URL?
+    let likesCount: String
+}
 
 final class PostDetailsView: UIView {
     
@@ -18,7 +27,6 @@ final class PostDetailsView: UIView {
         label.textColor = Constant.Color.main
         label.textAlignment = .left
         label.numberOfLines = 0
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -27,7 +35,6 @@ final class PostDetailsView: UIView {
         label.font = Constant.Font.text
         label.textColor = Constant.Color.second
         label.numberOfLines = 0
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -36,7 +43,6 @@ final class PostDetailsView: UIView {
         imageView.image = Constant.likesIcon
         imageView.tintColor = Constant.Color.main
         imageView.contentMode = .scaleAspectFit
-        imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
     
@@ -46,7 +52,6 @@ final class PostDetailsView: UIView {
         label.textColor = Constant.Color.main
         label.numberOfLines = 1
         label.textAlignment = .left
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -58,7 +63,6 @@ final class PostDetailsView: UIView {
         imageView.layer.borderWidth = Constant.borderWidth
         imageView.layer.borderColor = Constant.Color.main.cgColor
         imageView.backgroundColor = .systemGray3
-        imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
     
@@ -68,7 +72,6 @@ final class PostDetailsView: UIView {
         label.textColor = Constant.Color.third
         label.numberOfLines = 1
         label.textAlignment = .right
-        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -77,7 +80,6 @@ final class PostDetailsView: UIView {
         stackView.axis = .horizontal
         stackView.spacing = Constant.Spacing.likesStackView
         stackView.alignment = .center
-        stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }()
     
@@ -86,7 +88,6 @@ final class PostDetailsView: UIView {
         stackView.axis = .horizontal
         stackView.distribution = .equalSpacing
         stackView.alignment = .center
-        stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }()
     
@@ -96,7 +97,6 @@ final class PostDetailsView: UIView {
         stackView.distribution = .equalSpacing
         stackView.spacing = Constant.Spacing.textStackView
         stackView.alignment = .fill
-        stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }()
     
@@ -105,21 +105,18 @@ final class PostDetailsView: UIView {
         stackView.axis = .vertical
         stackView.spacing = Constant.Spacing.mainStackView
         stackView.alignment = .fill
-        stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }()
     
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.showsVerticalScrollIndicator = false
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
         return scrollView
     }()
     
     private let spacerView: UIView = {
         let view = UIView()
         view.setContentHuggingPriority(.defaultLow, for: .vertical)
-        view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
@@ -136,7 +133,7 @@ final class PostDetailsView: UIView {
     
     // MARK: - Configuration
     
-    func configure(with viewState: PostDetailsViewState) {
+    func configure(with viewState: PostDetailsItemViewState) {
         postImageView.kf.indicatorType = .activity
         postImageView.kf.setImage(with: viewState.image, placeholder: nil)
         
@@ -179,22 +176,21 @@ private extension PostDetailsView {
         let contentGuide = scrollView.contentLayoutGuide
         let frameGuide = scrollView.frameLayoutGuide
         
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor),
+        scrollView.snp.makeConstraints { make in
+            make.top.equalTo(safeAreaLayoutGuide.snp.top)
+            make.leading.trailing.bottom.equalToSuperview()
+        }
+        
+        mainStackView.snp.makeConstraints { make in
+            make.edges.equalTo(contentGuide).inset(Constant.Spacing.padding)
             
-            mainStackView.topAnchor.constraint(equalTo: contentGuide.topAnchor, constant: Constant.Spacing.padding),
-            mainStackView.leadingAnchor.constraint(equalTo: contentGuide.leadingAnchor, constant: Constant.Spacing.padding),
-            mainStackView.trailingAnchor.constraint(equalTo: contentGuide.trailingAnchor, constant: -Constant.Spacing.padding),
-            mainStackView.bottomAnchor.constraint(equalTo: contentGuide.bottomAnchor, constant: -Constant.Spacing.padding),
-            
-            mainStackView.widthAnchor.constraint(equalTo: frameGuide.widthAnchor, constant: -(Constant.Spacing.padding * 2)),
-            mainStackView.heightAnchor.constraint(greaterThanOrEqualTo: frameGuide.heightAnchor, constant: -(Constant.Spacing.padding * 2)),
-            
-            postImageView.heightAnchor.constraint(equalToConstant: Constant.postImageHeight)
-        ])
+            make.width.equalTo(frameGuide).offset(-(Constant.Spacing.padding * 2))
+            make.height.greaterThanOrEqualTo(frameGuide).offset(-(Constant.Spacing.padding * 2))
+        }
+        
+        postImageView.snp.makeConstraints { make in
+            make.height.equalTo(Constant.postImageHeight)
+        }
     }
 }
 

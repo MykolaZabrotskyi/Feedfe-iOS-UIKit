@@ -8,9 +8,12 @@
 import Foundation
 
 struct PostDetailsViewState {
-    let date: String
-    let title: String
-    let text: String
-    let image: URL?
-    let likesCount: String
+    typealias Item = PostDetailsItemViewState
+    
+    enum Kind {
+        case error(String)
+        case loaded(Item)
+    }
+    
+    let kind: Kind
 }

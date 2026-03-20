@@ -12,7 +12,10 @@ enum PostEndpoint: Endpoint {
     case getPostDetails(id: String)
     
     var baseURL: URL {
-        return URL(string: "https://raw.githubusercontent.com")!
+        guard let url = URL(string: "https://raw.githubusercontent.com") else {
+            fatalError("Can't create url")
+        }
+        return url
     }
     
     var path: String {
