@@ -10,11 +10,10 @@ import UIKit
 
 protocol PostDetailsViewControllerProtocol: AnyObject {
     func render(with viewState: PostDetailsViewState)
-    func displayError(_ message: String, onOkTapped: @escaping () -> Void)
 }
 
 final class PostDetailsViewController: BaseViewController<PostDetailsPresenterProtocol> {
-
+    
     // MARK: - UI Components
     
     private let detailsView: PostDetailsView = {
@@ -28,7 +27,7 @@ final class PostDetailsViewController: BaseViewController<PostDetailsPresenterPr
         super.viewDidLoad()
         setupUI()
         setupLayout()
-        presenter.fetchPostDetails()
+        presenter.perform(with: .onLoad)
     }
 }
 
@@ -36,7 +35,18 @@ final class PostDetailsViewController: BaseViewController<PostDetailsPresenterPr
 
 extension PostDetailsViewController: PostDetailsViewControllerProtocol {
     func render(with viewState: PostDetailsViewState) {
-        detailsView.configure(with: viewState)
+        switch viewState.kind {
+        case .error(let message):
+            let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+                self?.presenter.perform(with: .onErrorTapped)
+            }
+            alert.addAction(okAction)
+            present(alert, animated: true)
+            
+        case .loaded(let itemViewState):
+            detailsView.configure(with: itemViewState)
+        }
     }
     
     func displayError(_ message: String, onOkTapped: @escaping () -> Void) {

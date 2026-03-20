@@ -7,8 +7,13 @@
 
 import Foundation
 
+enum PostDetailsPresenterAction {
+    case onLoad
+    case onErrorTapped
+}
+
 protocol PostDetailsPresenterProtocol: AnyObject {
-    func fetchPostDetails()
+    func perform(with action: PostDetailsPresenterAction)
 }
 
 final class PostDetailsPresenter {
@@ -43,11 +48,25 @@ final class PostDetailsPresenter {
 // MARK: - PostDetailsPresenterProtocol
 
 extension PostDetailsPresenter: PostDetailsPresenterProtocol {
-    func fetchPostDetails() {
+    func perform(with action: PostDetailsPresenterAction) {
+        switch action {
+        case .onLoad:
+            performLoadAction()
+            
+        case .onErrorTapped:
+            performErrorTapped()
+        }
+    }
+}
+
+// MARK: - Private Methods
+
+private extension PostDetailsPresenter {
+    func performLoadAction() {
         Task {
             do {
                 let response = try await postAPIService.fetchPostDetails(with: postID)
-                let state = PostDetailsState(post: response.post)
+                let state = PostDetailsViewStateFactoryInput(post: response.post)
                 guard let viewState = self.viewStateFactory.make(from: state) else {
                     throw Constant.Error.corruptedData
                 }
@@ -59,12 +78,15 @@ extension PostDetailsPresenter: PostDetailsPresenterProtocol {
                 }
             } catch {
                 await MainActor.run {
-                    self.viewController?.displayError(error.localizedDescription) { [weak self] in
-                        self?.router.popToFeed()
-                    }
+                    let errorState = PostDetailsViewState(kind: .error(error.localizedDescription))
+                    self.viewController?.render(with: errorState)
                 }
             }
         }
+    }
+    
+    func performErrorTapped() {
+        router.popToFeed()
     }
 }
 

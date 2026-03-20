@@ -17,7 +17,6 @@ enum CustomTabSelectedMode: Int, CaseIterable {
 
 protocol PostFeedViewControllerProtocol: AnyObject {
     func render(with viewState: PostFeedViewState)
-    func displayError(_ message: String)
 }
 
 final class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol> {
@@ -77,7 +76,7 @@ final class PostFeedViewController: BaseViewController<PostFeedPresenterProtocol
         setupUI()
         setupLayout()
         
-        presenter.fetchPostFeed()
+        presenter.perform(with: .onLoad)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -98,7 +97,7 @@ extension PostFeedViewController: CustomTabViewDelegate {
         guard let mode = CustomTabSelectedMode(rawValue: index) else {
             return
         }
-        presenter.didChangeDisplayMode(to: mode)
+        presenter.perform(with: .onDisplayModeChanged(mode: mode))
     }
 }
 
@@ -107,7 +106,7 @@ extension PostFeedViewController: CustomTabViewDelegate {
 extension PostFeedViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
-        presenter.didSelectPost(at: indexPath.item)
+        presenter.perform(with: .onPostSelected(index: indexPath.row))
     }
 }
 
@@ -115,7 +114,7 @@ extension PostFeedViewController: UICollectionViewDelegate {
 
 extension PostFeedViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        presenter.search(with: searchText)
+        presenter.perform(with: .onSearch(query: searchText))
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
@@ -127,24 +126,29 @@ extension PostFeedViewController: UISearchBarDelegate {
 
 extension PostFeedViewController: PostFeedViewControllerProtocol {
     func render(with viewState: PostFeedViewState) {
-        if let firstSection = viewState.sections.first {
-            collectionView.isScrollEnabled = (firstSection.type != .gallery)
+        switch viewState.kind {
+        case .error(let message):
+            collectionView.isHidden = true
+            let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+            
+        case .loaded(let sections):
+            collectionView.isHidden = false
+            
+            if let firstSection = sections.first {
+                collectionView.isScrollEnabled = (firstSection.type != .gallery)
+            }
+            
+            var snapshot = Snapshot()
+            for section in sections {
+                snapshot.appendSections([section.type])
+                snapshot.appendItems(section.items, toSection: section.type)
+                snapshot.reloadItems(section.items)
+            }
+            
+            dataSource.apply(snapshot, animatingDifferences: false)
         }
-        
-        var snapshot = Snapshot()
-        for section in viewState.sections {
-            snapshot.appendSections([section.type])
-            snapshot.appendItems(section.items, toSection: section.type)
-            snapshot.reloadItems(section.items)
-        }
-        
-        dataSource.apply(snapshot, animatingDifferences: false)
-    }
-    
-    func displayError(_ message: String) {
-        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
     }
 }
 
@@ -228,14 +232,6 @@ private extension PostFeedViewController {
     }
     
     func setupLayout() {
-        NSLayoutConstraint.activate([
-            tabView.heightAnchor.constraint(equalToConstant: Constant.CustomTab.height),
-            mainVerticalStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            mainVerticalStackView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            mainVerticalStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            mainVerticalStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        ])
-        
         mainVerticalStackView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.leading.bottom.trailing.equalToSuperview()
@@ -266,7 +262,7 @@ private extension PostFeedViewController {
             cell.configure(with: sectionItem, sectionType: sectionType)
             
             cell.onExpandTapped = { [weak self] in
-                self?.presenter.toggleExpand(at: sectionItem.id)
+                self?.presenter.perform(with: .onPostExpanded(postID: sectionItem.id))
             }
             
             return cell

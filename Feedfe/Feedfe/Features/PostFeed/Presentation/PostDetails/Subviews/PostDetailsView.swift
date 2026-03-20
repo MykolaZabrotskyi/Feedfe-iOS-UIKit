@@ -9,6 +9,14 @@ import Kingfisher
 import SnapKit
 import UIKit
 
+struct PostDetailsItemViewState {
+    let date: String
+    let title: String
+    let text: String
+    let image: URL?
+    let likesCount: String
+}
+
 final class PostDetailsView: UIView {
     
     // MARK: - UI Components
@@ -125,7 +133,7 @@ final class PostDetailsView: UIView {
     
     // MARK: - Configuration
     
-    func configure(with viewState: PostDetailsViewState) {
+    func configure(with viewState: PostDetailsItemViewState) {
         postImageView.kf.indicatorType = .activity
         postImageView.kf.setImage(with: viewState.image, placeholder: nil)
         
