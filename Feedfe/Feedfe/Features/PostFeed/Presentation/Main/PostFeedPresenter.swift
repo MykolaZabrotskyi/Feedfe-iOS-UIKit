@@ -22,11 +22,12 @@ final class PostFeedPresenter {
     private weak var viewController: PostFeedViewControllerProtocol?
     private let router: PostFeedRouterProtocol
     private let postAPIService: PostAPIServiceProtocol
-    private let dateFormatter: DateFormatterProtocol
+    private let viewStateFactory: PostFeedViewStateFactoryProtocol
     
-    private var fetchedPosts: [PostFeedItemViewState] = []
-    private var displayedPosts: [PostFeedItemViewState] = []
+    private var fetchedPosts: [PostFeedDTO] = []
+    private var displayedPosts: [PostFeedDTO] = []
     private var currentDisplayMode: CustomTabSelectedMode = .list
+    private var expandedPostIDs: Set<String> = []
     
     private var searchTask: Task<Void, Never>?
     
@@ -36,12 +37,12 @@ final class PostFeedPresenter {
         viewController: PostFeedViewControllerProtocol,
         router: PostFeedRouterProtocol,
         postAPIService: PostAPIServiceProtocol,
-        dateFormatter: DateFormatterProtocol
+        viewStateFactory: PostFeedViewStateFactoryProtocol
     ) {
         self.router = router
         self.viewController = viewController
         self.postAPIService = postAPIService
-        self.dateFormatter = dateFormatter
+        self.viewStateFactory = viewStateFactory
     }
 }
 
@@ -52,9 +53,8 @@ extension PostFeedPresenter: PostFeedPresenterProtocol {
         Task {
             do {
                 let response = try await postAPIService.fetchPostFeed()
-                fetchedPosts = response.posts.compactMap { self.mapToCellModel(from: $0) }
-                
-                displayedPosts = fetchedPosts
+                self.fetchedPosts = response.posts
+                self.displayedPosts = self.fetchedPosts
                 
                 await MainActor.run {
                     updateViewState()
@@ -73,25 +73,17 @@ extension PostFeedPresenter: PostFeedPresenterProtocol {
     }
     
     func toggleExpand(at postID: String) {
-        guard
-            let indexInCurrentPosts = displayedPosts.firstIndex(where: { $0.id == postID }),
-            let indexInAllPosts = fetchedPosts.firstIndex(where: { $0.id == postID })
-        else {
-            return
+        if expandedPostIDs.contains(postID) {
+            expandedPostIDs.remove(postID)
+        } else {
+            expandedPostIDs.insert(postID)
         }
-        
-        displayedPosts[indexInCurrentPosts].isExpanded.toggle()
-        displayedPosts[indexInCurrentPosts].expandButtonTitle = displayedPosts[indexInCurrentPosts].isExpanded
-        ? Constant.Text.collapse
-        : Constant.Text.expand
-        
-        fetchedPosts[indexInAllPosts] = displayedPosts[indexInCurrentPosts]
         
         updateViewState()
     }
     
     func didSelectPost(at index: Int) {
-        let selectedPostId = displayedPosts[index].id
+        let selectedPostId = String(displayedPosts[index].id)
         router.routeToDetails(with: selectedPostId)
     }
     
@@ -127,60 +119,24 @@ extension PostFeedPresenter: PostFeedPresenterProtocol {
 // MARK: - Private Methods
 
 private extension PostFeedPresenter {
-    func mapToCellModel(from dto: PostFeedDTO) -> PostFeedItemViewState? {
-        guard
-            let timestamp = dto.timestamp,
-            let title = dto.title,
-            let previewText = dto.previewText,
-            let likesCount = dto.likesCount
-        else {
-            return nil
-        }
-        
-        let dateString = dateFormatter.formatRelativeDate(from: timestamp)
-        return PostFeedItemViewState(
-            id: String(dto.id),
-            date: dateString,
-            title: title,
-            previewText: previewText,
-            likesCount: String(likesCount),
-            expandButtonTitle: Constant.Text.expand,
-            isExpanded: false
-        )
-    }
-    
     func updateViewState() {
-        let sectionType: PostFeedViewState.SectionType
-        switch currentDisplayMode {
-        case .list: sectionType = .list
-            
-        case .grid: sectionType = .grid
-            
-        case .gallery: sectionType = .gallery
-        }
+        let state = PostFeedState(
+            posts: displayedPosts,
+            displayMode: currentDisplayMode,
+            expandedPostIDs: expandedPostIDs
+        )
         
-        let section = PostFeedViewState.Section(type: sectionType, items: displayedPosts)
-        let viewState = PostFeedViewState(sections: [section])
+        let viewState = viewStateFactory.make(from: state)
+        
         viewController?.render(with: viewState)
     }
     
-    func simulateNetworkSearch(query: String) async throws -> [PostFeedItemViewState] {
+    func simulateNetworkSearch(query: String) async throws -> [PostFeedDTO] {
         try await Task.sleep(nanoseconds: 200_000_000)
         
         return fetchedPosts.filter { post in
-            post.previewText.localizedCaseInsensitiveContains(query)
+            post.previewText?.localizedCaseInsensitiveContains(query) == true
         }
     }
     
-}
-
-// MARK: - Constant
-
-private extension PostFeedPresenter {
-    enum Constant {
-        enum Text {
-            static let collapse = "Collapse"
-            static let expand = "Expand"
-        }
-    }
 }
