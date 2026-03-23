@@ -1,0 +1,149 @@
+# --- Base ---
+strict: true
+warning_threshold: 250
+
+disabled_rules:
+  - force_cast
+  - trailing_whitespace  # Enable for auto-fix whitespace
+  - valid_ibinspectable
+  - blanket_disable_command
+  - closure_parameter_position
+  - todo
+  - comment_spacing
+
+opt_in_rules:
+  - void_return
+  - private_outlet
+  - multiline_arguments
+  - return_arrow_whitespace
+  - force_unwrapping
+  - closing_brace
+  - opening_brace
+  - control_statement
+  - colon
+  - comma
+  - contains_over_first_not_nil
+  - compiler_protocol_init
+  - first_where
+  - sorted_imports
+  - sorted_first_last
+  - toggle_bool
+  - collection_alignment
+  - vertical_parameter_alignment_on_call
+  - yoda_condition
+  - empty_collection_literal
+  - flatmap_over_map_reduce
+  - closure_spacing
+  - identical_operands
+  - last_where
+  - literal_expression_end_indentation
+  - prefer_zero_over_explicit_init
+  - unneeded_parentheses_in_closure_argument
+  - multiline_parameters_brackets
+  - multiline_parameters
+  - multiline_function_chains
+  - modifier_order
+  - attributes
+  - closure_end_indentation
+  - empty_string
+  - explicit_init
+  - multiline_arguments_brackets
+
+# --- Metrics / thresholds ---
+cyclomatic_complexity:
+  warning: 10
+  error: 20
+  ignores_case_statements: true
+
+type_name:
+  allowed_symbols: "_"
+  max_length:
+    warning: 50
+    error: 60
+  min_length:
+    warning: 1
+
+identifier_name:
+  max_length:
+    warning: 50
+    error: 60
+  min_length:
+    warning: 1
+
+line_length: 160
+
+function_body_length:
+  warning: 70
+
+function_parameter_count:
+  warning: 10
+  error: 15
+
+file_length:
+  warning: 700
+
+type_body_length:
+  warning: 400
+  error: 450
+
+nesting:
+  type_level:
+    warning: 3
+    
+computed_accessors_order:
+  severity: error
+colon:
+  severity: error
+trailing_comma:
+  severity: error
+opening_brace:
+  severity: error
+statement_position:
+  severity: error
+attributes:
+  severity: error
+
+# --- Rule severities you asked to set as errors ---
+trailing_newline: error
+unneeded_break_in_switch: error
+unused_enumerated: error
+trailing_semicolon: error
+shorthand_operator: error
+no_space_in_method_call: error
+duplicate_imports: error
+function_name_whitespace: error
+implicit_optional_initialization: error
+return_arrow_whitespace: error
+comma: error
+duplicate_enum_cases: error
+legacy_random: error
+vertical_parameter_alignment_on_call: error
+multiline_arguments_brackets: error
+superfluous_disable_command: error
+multiline_function_chains: error
+closure_end_indentation: error
+multiple_closures_with_trailing_closure: error
+multiline_parameters_brackets: error
+implicit_getter: error
+
+custom_rules:
+  no_strong_self:
+    included:
+      - ".*\\.swift"
+    name: "StrongSelf "
+    regex: "let (self|strongSelf) = self"
+    message: "Use 'guard self else { return }' to unwrap weak self"
+    severity: error
+  redundant_foundation_import:
+    included:
+      - ".*\\.swift"
+    name: "Foundation Import Redundant"
+    regex: "(?ms)(?=.*^import UIKit$)^import Foundation$"
+    message: "Remove 'import Foundation' when 'import UIKit' is present"
+    severity: error
+
+# Reporter for faster output
+reporter: "xcode"
+
+# Disable slow analyzer rules
+analyzer_rules: []
